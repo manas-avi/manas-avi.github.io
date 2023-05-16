@@ -3,9 +3,9 @@
 {% endif %}
 
 {% if site.blank_title %}
-<h1>{{ site.title | default: site.github.repository_name }}</h1>
+<h2>{{ site.title | default: site.github.repository_name }}</h2>
 {% else %}
-<h1>{{ site.title | default: site.github.repository_name }}</h1>
+<h2>{{ site.title | default: site.github.repository_name }}</h2>
 {% endif %}
 
 {% if site.email %}

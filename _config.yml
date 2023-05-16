@@ -1,17 +1,21 @@
 title: Manas Bhargava
 logo: /assets/img/manas-profile.jpeg
-email: mbhargav@ist[dot]ac[dot]at
-description: PhD student in the digital fabrication group at IST Austria.
+repository_name: Manas Bhargava
+email: manas[.]bhargava@ist[.]ac[.]at
+description: PhD student in the digital fabrication group at ISTA.
 favicon: true
 color-scheme: auto
 domain: https://manas-avi.github.io/       # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
-url: https://https://manas-avi.github.io/  # the base hostname and protocol for your site, e.g. http://example.com
-
+url: https://manas-avi.github.io/  # the base hostname and protocol for your site, e.g. http://example.com
+permalink: pretty
+future: true # do not hide future dates
 
 plugins:
+  - jekyll-remote-theme
   - jekyll-sitemap
   - jekyll-seo-tag
   - jemoji
+
 
 platforms:
   - name: GitHub
@@ -27,11 +31,17 @@ platforms:
   #   icon: 
   #   link: hhttps://ist.ac.at/en/research/bickel-group/    
 
+collections:
+  publications:
+    output: true
+    permalink: /:collection/:path/
+
+
 navigation:
   # - name: Readme
-    # link: ./index.html
-    # sublist:
-    #   - name: Image
-    #     link: ./index.html#small-image
+  #   link: ./index.html
+  #   sublist:
+  #     - name: Image
+  #       link: ./index.html#small-image
   # - name: Another Page
   #   link: ./another-page.html

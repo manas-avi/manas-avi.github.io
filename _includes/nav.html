@@ -1,0 +1,39 @@
+<!-- <nav class="navbar navbar-inverse navbar-fixed-top"> -->
+<style>
+nav ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0;
+    overflow: hidden;
+}
+
+nav li {
+    float: left;
+}
+
+nav li a {
+    padding: 8px;
+    background-color:None
+}
+/* nav
+{
+  font-family: 'Lato', sans-serif;
+  color:grey;
+  font-size: 40px;
+  margin: 0px;
+} */
+
+</style>
+
+<nav class="navbar navbar-dark bg-dark ">
+        <div class="wrapper">
+        <h2>
+            <ul class="nav navbar-nav">
+                <li><a href="{{ '/' | prepend: site.baseurl }}">About me</a>
+                <li><a href="{{ '/news' | prepend: site.baseurl }}">News</a>
+                <li><a href="{{ '/publications' | prepend: site.baseurl }}">Publications</a>
+                <!-- TODOs add a cv page -->
+            </ul>
+        </h2>
+    </div>
+</nav>

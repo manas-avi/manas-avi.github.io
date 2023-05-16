@@ -2,7 +2,6 @@
 ---
 
 @import "jekyll-theme-minimalistic";
-
 .overlay {
   position: fixed;
   top: 0;
@@ -59,4 +58,54 @@
   .popup {
     width: 70%;
   }
+}
+
+// #publications ul.authors li {
+//     padding: 0;
+// }
+
+// #publications ul.authors li:after {
+//     content: ',';
+// }
+
+#publications ul.authors li:last-child:after {
+    content: '';
+}
+
+#publications ul.buttons li {
+    padding: 0;
+}
+
+#publications ul.years {
+    text-align: left;
+    margin-bottom: 2em;
+    font-size: 1.5em;
+}
+
+#publications ul.years li {
+    padding: 0;
+}
+
+#publications ul.years li:after {
+    content: ' | ';
+}
+
+#publications ul.years li:last-child:after {
+    content: '';
+}
+
+.paperthumbnail {
+    box-shadow: 1px 4px 8px 0 rgba(0, 0, 0, 0.5), 0 10px 14px 0 rgba(0, 0, 0, 0.2);
+    margin: 6px 16px 16px 16px;
+}
+
+#news ul {
+  text-align: left;
+  margin-bottom: 2em;
+  font-size: 1.0em;
+}
+#years ul {
+  text-align: left;
+  margin-bottom: 2em;
+  font-size: 1.0em;
 }

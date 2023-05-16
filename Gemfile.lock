@@ -308,6 +308,7 @@ PLATFORMS
 DEPENDENCIES
   github-pages (~> 228)
   html-proofer (~> 3.0)
+  jekyll-remote-theme
   jekyll-seo-tag
   jekyll-sitemap
   jekyll-theme-minimalistic!

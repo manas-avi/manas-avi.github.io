@@ -80,6 +80,26 @@ a:hover small {
   color: var(--clr-a-text-hvr);
 }
 
+// https://stackoverflow.com/questions/53567706/how-do-i-include-short-vertical-lines-in-between-links-in-navbar#:~:text=Try%20adding%20the%20border%2Dright,to%20the%20each%20li%20tag.&text=Below%20is%20the%20full%20working,Hope%20it%20helps%20you.
+ul {
+  list-style:none;
+}
+ul li{
+  display:inline-block; 
+  padding:0 7px; 
+  position:relative;
+}
+ul li:not(:last-child)::after{
+  content:""; 
+  border:1px solid #e2e2e2;
+  border-width: 1px 1px 0 0;
+  position:absolute; 
+  right:-3px; 
+  top:0; 
+  height:100%;
+}
+
+
 ul.link a {
   color:var(--clr-h1-and-bold);
 }
@@ -126,8 +146,8 @@ ul.link:last-child {
 }
 
 .wrapper {
-  width: 860px;
-  margin: 0 auto;
+  width: 70%;
+  margin: 0px 0px 0px 0px;
 }
 
 blockquote {
@@ -255,7 +275,7 @@ strong {
 }
 
 section {
-  width: 550px;
+  width: 70%;
   float: right;
   padding-bottom:30px;
 }
