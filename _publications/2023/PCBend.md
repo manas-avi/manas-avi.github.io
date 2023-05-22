@@ -4,7 +4,7 @@ title: "PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards"
 doi: https://doi.org/10.1145/3592411
 
 authors:
-  - name: Friere*, Marco
+  - name: Freire*, Marco
     affiliations: [2]
     url: 
   - name: Bhargava*, Manas
@@ -38,7 +38,7 @@ project: https://manas-avi.github.io/projects/PCBend/index.html
 project_root: https://manas-avi.github.io/projects/PCBend/
 
 bibtex: |
-  @inproceedings{FriereAndManas2023PCBend,
+  @inproceedings{FreireAndBhargava2023PCBend,
   author = {Marco Freire and Manas Bhargava and Camille Schreck and Pierre-Alexandre Hugron and Bernd Bickel and Sylvain Lefebvre},
   title = {PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards},
   journal = {ACM Transactions on Graphics (Proc. SIGGRAPH)},
