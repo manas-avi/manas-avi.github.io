@@ -6,7 +6,7 @@ doi: https://doi.org/10.1145/3592411
 authors:
   - name: Freire*, Marco
     affiliations: [2]
-    url: 
+    url: https://mfremer.github.io/
   - name: Bhargava*, Manas
     affiliations: [1]
     url: https://manas-avi.github.io/
@@ -38,14 +38,25 @@ project: https://manas-avi.github.io/projects/PCBend/index.html
 project_root: https://manas-avi.github.io/projects/PCBend/
 
 bibtex: |
-  @inproceedings{FreireAndBhargava2023PCBend,
-  author = {Marco Freire and Manas Bhargava and Camille Schreck and Pierre-Alexandre Hugron and Bernd Bickel and Sylvain Lefebvre},
-  title = {PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards},
-  journal = {ACM Transactions on Graphics (Proc. SIGGRAPH)},
-  year = {2023},
-  volume = {42},
-  number = {4}
+  @article{10.1145/3592411,
+    author = {Freire, Marco and Bhargava, Manas and Schreck, Camille and Hugron, Pierre-Alexandre and Bickel, Bernd and Lefebvre, Sylvain},
+    title = {PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards},
+    year = {2023},
+    issue_date = {August 2023},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {42},
+    number = {4},
+    issn = {0730-0301},
+    url = {https://doi.org/10.1145/3592411},
+    doi = {10.1145/3592411},
+    journal = {ACM Trans. Graph.},
+    month = {jul},
+    articleno = {142},
+    numpages = {16},
+    keywords = {automated placement and routing, PCB design, PCB bending, 3D electronics}
   }
+
 
 
 abstract: |
@@ -77,8 +88,7 @@ teaser:
 * [Paper]({{page.paper}})
 * [Supplemental]({{page.supplemental}})
 * [Video]({{page.video}})
-* Code: Coming soon!
-<!-- * [Code](https://github.com/mfremer/pcbend) -->
+* [Code](https://github.com/mfremer/pcbend)
 <br>
 
 

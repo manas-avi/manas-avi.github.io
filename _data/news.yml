@@ -1,3 +1,11 @@
+- date: 2023-08-10
+  content: >
+    Me and [Marco](https://mfremer.github.io/) will be presenting our project [PCBend](../publications/2023/PCBend/index.html) at [Siggraph](https://s2023.siggraph.org/presentation/?id=papers_553&sess=sess139) in LA. Do check it out!!
+
+- date: 2023-08-01
+  content: >
+    The code for our project [PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards](../publications/2023/PCBend/index.html) is now out!! Check it out [here](https://github.com/mfremer/pcbend)
+
 - date: 2023-05-02
   content: >
     Our Paper [PCBend: Light Up Your 3D Shapes With Foldable Circuit Boards](../publications/2023/PCBend/index.html) is conditionally accepted at Siggraph 2023!!
