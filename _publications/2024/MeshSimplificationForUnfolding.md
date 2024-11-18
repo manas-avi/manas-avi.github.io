@@ -1,7 +1,7 @@
 ---
 layout: publication
 title: "Mesh Simplification For Unfolding"
-doi: ??
+doi: https://doi.org/10.1111/cgf.15269
 
 authors:
   - name: Bhargava, Manas
@@ -38,14 +38,24 @@ affiliations:
 publication: Computer Graphics Forum 2024
 date: 2024-10-29
 grp: bickel
-paper: Mesh_Simplification_For_Unfolding_cgf_camera_ready.pdf
+paper: Mesh_Simplification_For_Unfolding_cgf_opensource.pdf
 supplemental: 
 video: https://www.youtube.com/watch?v=EFJM6qPeksc
 project: https://manas-avi.github.io/projects/MeshSimplificationForUnfolding/index.html
 project_root: https://manas-avi.github.io/projects/MeshSimplificationForUnfolding/
 
 bibtex: |
-  @article{
+  @article{https://doi.org/10.1111/cgf.15269,
+    author = {Bhargava, M. and Schreck, C. and Freire, M. and Hugron, P. A. and Lefebvre, S. and Sellán, S. and Bickel, B.},
+    title = {Mesh Simplification for Unfolding},
+    journal = {Computer Graphics Forum},
+    volume = {n/a},
+    number = {n/a},
+    pages = {e15269},
+    keywords = {fabrication, single patch unfolding, mesh simplification},
+    doi = {https://doi.org/10.1111/cgf.15269},
+    url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.15269},
+    eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/cgf.15269},
   }
 
 

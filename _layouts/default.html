@@ -14,7 +14,7 @@
     {% seo %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ "/assets/css/colors-ColorScheme.css?v=" | replace: "ColorScheme", ColorScheme | append: site.github.build_revision | relative_url }}">
     <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
     <link rel="preload" href="{{site.logo | relative_url}}" as="image">
@@ -34,9 +34,11 @@
           {%- include footer.html -%}
         </div>
       </div>
-      <section>
-      {{ content }}
-      </section>
+      <div class = "wrapper">
+        <section>
+        {{ content }}
+        </section>
+      </div>
       <footer>
         {%- include footer.html -%}
       </footer>

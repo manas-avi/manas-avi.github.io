@@ -100,5 +100,5 @@ teaser:
 
 We thank the reviewers for the valuable feedback. We also thank the Miba Machine Shop at ISTA, PCBWay, and PragoBoard for helping us with fabrication and assembly. This  project was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (Grant Agreement No. 715767 -– MATERIALIZABLE).
 
-![EU](flag_yellow_low.jpg){: height="70x"}
+![EU](flag_yellow_low.jpg){: height="70px"}
 ![ERC](LOGO-ERC.jpg){: height="70px"}

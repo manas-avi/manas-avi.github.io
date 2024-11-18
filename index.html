@@ -2,11 +2,99 @@
 layout: default
 ---
 
-<h2>About me </h2>
+<h2 style="color:#006db5"> About me </h2>
 
+{% for data in site.data.intro %}
+    {{data.content | markdownify}}
+{% endfor %}
 
-Hi, I am Manas Bhargava and I am a graduate student at the Institute of Science and Technology, Austria. 
-I work at the <a href="https://ista.ac.at/en/research/bickel-group/">Computer Graphics and Digital Fabrication lab </a> 
-with Prof. <a href="https://berndbickel.com/">Bernd Bickel</a>. 
-I am interested in topics related to the design and control of deformable objects. Check out the <a href="../publications/">projects</a> to know more about my research work. 
-If you are master student and would like to work with us on your master thesis, checkout the projects listed <a href="https://cdl.ethz.ch/projects/">here</a>
+<br>
+
+<h2 style="color:#006db5">News</h2>
+<div class="news">
+    {% for news in site.data.news %}
+    {% assign content = "**[" | append: news.date | append: "]:** " | append: news.content %}
+    {{content | markdownify }}
+    {% endfor %}
+</div>
+    
+<br>
+
+<h2 style="color:#006db5">Publications</h2>
+<div id="publications">
+    <div class="wall ">
+        <div class="row">
+        {% assign current_year = 0 %}
+        {% assign publications = site.publications | sort: 'date' | reverse %}
+
+        <!-- add the lines below when you have > 1 paper -->
+
+        <!-- <ul class="years list-inline">
+        {% for p in publications %}
+            {% assign year = p.date | split: '-' | first %}
+            {% if year != current_year %}
+            <li><a href="#{{ year }}">{{ year }}</a></li>
+            {% endif %}
+            {% assign current_year = year %}
+        {% endfor %}
+        </ul> -->
+
+        {% assign index = 1 %}
+        {% assign current_year = 0 %}
+        {% for p in publications %}
+            {% assign year = p.date | split: '-' | first %}
+            <table class="image-text-table">
+                <tr>
+                  <td><img src="{{ '/thumb.jpg' | prepend: p.url | prepend: site.baseurl }}" alt="{{ p.title }}">
+                  <td>                
+                    <h3>{{ p.title }}</h3>
+                    {% if p.doi %}
+                    <p><a href="{{p.doi}}">{{ p.publication }}</a></p>
+                    {% else %}
+                    <h3>{{ p.publication }}</h3>
+                    {% endif %}
+                    <ul class="authors list-inline">
+                    {% for author in p.authors %}
+                        {% assign fullname = author.name | split: ',' | reverse | join: ' ' %}
+                        {% assign lname = author.name | split: ',' | first | default: "none" %}
+                        {% if author.name %}
+                            {% if lname == "Bhargava" or lname == "Bhargava*" %}
+                                <b><li>{{ fullname }}</li></b>
+                            {% else %}
+                                <li>{{ fullname }}</li>
+                            {% endif %}
+                            <!-- <li>{{ author.name | split: ',' | first }}</li> -->
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+
+                    <ul class="buttons list-inline">
+                    {% if p.layout == "publication" or p.project %}
+                        <li>
+                        {% if p.layout == "publication" %}
+                            <a href="{{ p.url }}" class="btn btn-default">Project</a>
+                        {% else %}
+                        <a href="{{ p.project }}" class="btn btn-default">Project</a>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                    {% if p.paper %}
+                        {% if p.layout == "publication" %}
+                        <li>
+                            <a href="{{p.url}}{{p.paper }}" class="btn btn-default">Paper</a>
+                        </li>
+                        {% else %}
+                        <li>
+                            <a href="{{p.paper }}" class="btn btn-default">Paper</a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                    </ul>
+                </td>
+                </tr>
+            </table>
+            {% assign current_year = year %}
+        {% endfor %}
+        </div>
+    </div>
+</div>

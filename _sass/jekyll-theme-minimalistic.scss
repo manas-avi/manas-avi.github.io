@@ -36,7 +36,11 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 0 20px;
 }
 
-p, ul, ol, table, pre, dl {
+p, ul, ol, table, pre {
+  margin: 0 0 20px;
+}
+
+dl {
   margin: 0 0 20px;
 }
 
@@ -146,7 +150,7 @@ ul.link:last-child {
 }
 
 .wrapper {
-  width: 70%;
+  width: 90%;
   margin: 0px 0px 0px 0px;
 }
 
@@ -243,18 +247,57 @@ kbd {
   vertical-align: middle;
 }
 
+.news {
+  background-color: transparent;
+  color: var(--clr-text);
+  border: 0px solid black;
+  margin: 5px;
+  padding: 0px;
+  width: 100%;
+  height: calc(25vh - 108px);
+  overflow:auto;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap; /* Allows wrapping for responsiveness */
+  align-items: center; /* Vertically center-align items */
+  gap: 20px; /* Space between items */
+}
+
+.text {
+  flex: 1 1 300px; /* Allow the text to grow, shrink, and have a base width of 300px */
+  max-width: 50%; /* Text should not exceed half the container width */
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stack items vertically on small screens */
+    text-align: center; /* Center-align text for narrow layouts */
+  }
+
+  .image, .text {
+    max-width: 50%; /* Allow full width for both image and text */
+  }
+}
+
+.inline-image {
+  width: 100px
+  }
+
+
 .sidebar {
   width: 250px;
   float: left;
-  position: fixed;
+  position: float;
   -webkit-font-smoothing: subpixel-antialiased;
   top: 0;
-  padding: 58px 0 50px 0;
+  padding: 0px 0 0px 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: calc(100vh - 108px);
-  overflow-x: hidden;
+  overflow-x: scroll;
   overflow-y: scroll;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 }

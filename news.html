@@ -3,14 +3,10 @@ layout: default
 ---
 
 
-<div class="container text-left">
 <h2>News</h2>
-</div>
-
-<ul>
-    <dl class="dl-horizontal">
+<div class="news-long">
     {% for news in site.data.news %}
-    <dt>{{ news.date }}</dt><dd>{{ news.content | markdownify }}</dd>
+    {% assign content = "**[" | append: news.date | append: "]:** " | append: news.content %}
+    {{content | markdownify }}
     {% endfor %}
-    </dl>
-</ul>
+</div>
