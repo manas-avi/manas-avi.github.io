@@ -32,6 +32,8 @@ affiliations:
     url: https://mfx.loria.fr/
   - name: MIT
     url: https://people.csail.mit.edu/
+  - name: UofT
+    url: https://www.utoronto.ca//
   - name: ETH
     url: https://ethz.ch/en/the-eth-zurich.html
 
