@@ -43,6 +43,7 @@ grp: bickel
 paper: Mesh_Simplification_For_Unfolding_cgf_opensource.pdf
 supplemental: 
 video: https://www.youtube.com/watch?v=EFJM6qPeksc
+fast-forward: https://www.youtube.com/watch?v=Dr8Tz8vPUhQ
 project: https://manas-avi.github.io/projects/MeshSimplificationForUnfolding/index.html
 project_root: https://manas-avi.github.io/projects/MeshSimplificationForUnfolding/
 
@@ -95,7 +96,7 @@ teaser:
 
 * [Paper]({{page.paper}})
 * [Video]({{page.video}})
-* [Code](https://git.ista.ac.at/mbhargav/mesh-simplification-for-unfolding)
+* [Fast-forward]({{page.fast-forward}})
 <br>
 
 
