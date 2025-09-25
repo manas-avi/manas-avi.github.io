@@ -1,29 +1,41 @@
+- date: 2025-09-15
+  content: >
+    ![NEW](../data/star.png){: height="11px"} I have embarked on a new journey as a Postdoc in the Materiali Molli Lab with Jérémie Palacci. 
+
+- date: 2025-09-01
+  content: >
+    ![NEW](../data/star.png){: height="11px"} My journey as a PhD Student ends today as I succesfully defended my PhD thesis on the topic of [Design and control of deformable structures: From PCB lighting displays to elastomer robots](https://research-explorer.ista.ac.at/record/20276). 
+
+- date: 2025-08-29
+  content: >
+    ![NEW](../data/star.png){: height="11px"} Chris Wernke succesfully defended his bachelor thesis with us on the topic of Dynamic Simulation and Fabrication of Origami Robots. Congratulations!! 
+
+- date: 2025-06-27
+  content: >
+   Gave a talk on my Unfolding work at the Think and Drink Conference at ISTA. 
+
 - date: 2025-04-15
   content: >
-    ![NEW](../data/star.png){: height="11px"} I will be presenting our paper [Mesh Simplification For Unfolding](../publications/2024/MeshSimplificationForUnfolding/index.html) at [Eurographics](https://www.youtube.com/watch?v=Dr8Tz8vPUhQ) 2025 in London! Do check it out!!
+    Presented our paper [Mesh Simplification For Unfolding](../publications/2024/MeshSimplificationForUnfolding/index.html) at [Eurographics](https://www.youtube.com/watch?v=Dr8Tz8vPUhQ) 2025 in London! Do check it out!!
 - date: 2024-11-14
   content: >
-    Our paper [Mesh Simplification For Unfolding](../publications/2024/MeshSimplificationForUnfolding/index.html) is accepted to Computer Graphics Forum 2024!!
-
-- date: 2024-10-24
-  content: >
-    Marty Noëmi has started her Master Thesis with [CDL](https://cdl.ethz.ch/) on the topic of Functional Origami that I am co-supervising with [Pengbin Tang](https://tangpengbin.github.io/) 
+    Our paper [Mesh Simplification For Unfolding](../publications/2024/MeshSimplificationForUnfolding/index.html) got accepted at Computer Graphics Forum 2024!!
 
 - date: 2024-09-19
   content: >
-    Yuhan Zhang has succesfully defended his master thesis with us on the topic of Compatible Triangulations for Fabricating Deformable Structures that was co-supervised by me and [Michal](https://misop.github.io/). Congratulations!!
+    Yuhan Zhang succesfully defended his master thesis with us on the topic of Compatible Triangulations for Fabricating Deformable Structures that was co-supervised by me and [Michal](https://misop.github.io/). Congratulations!!
 
 - date: 2024-06-27
   content: >
-    I will be presenting my work on Design and Control of Deformable Structures using LCEs at the Soft-Hour Mini retreat at ISTA.
+    I presented my work on Design and Control of Deformable Structures using LCEs at the Soft-Hour Mini retreat at ISTA.
 
 - date: 2024-05-02
   content: >
-    Yuhan Zhang will be doing his Master Thesis with the [CDL](https://cdl.ethz.ch) lab in ETH Zurich and is co-supervised by me and [Michal](https://misop.github.io/).
+    Yuhan Zhang started his Master Thesis with the [CDL](https://cdl.ethz.ch) lab in ETH Zurich and is co-supervised by me and [Michal](https://misop.github.io/).
 
 - date: 2023-08-10
   content: >
-    Me and [Marco](https://mfremer.github.io/) will be presenting our project [PCBend](../publications/2023/PCBend/index.html) at [Siggraph](https://s2023.siggraph.org/presentation/?id=papers_553&sess=sess139) in LA. Do check it out!!
+    Me and [Marco](https://mfremer.github.io/) presented our project [PCBend](../publications/2023/PCBend/index.html) at [Siggraph](https://s2023.siggraph.org/presentation/?id=papers_553&sess=sess139) in LA. Do check it out!!
 
 - date: 2023-08-01
   content: >
@@ -35,27 +47,23 @@
 
 - date: 2023-04-28
   content: >
-    I would be presenting my research on foldable electronics at the Think and Drink Conference at ISTA. 
+    I presented my research on foldable electronics at the Think and Drink Conference at ISTA. 
 
 - date: 2023-03-07
   content: >
-    I would be presenting mine and my group's research at WinterGraph 2023 held in St.Johann / Pongau.
-
-- date: 2022-12-07
-  content: >
-    I would be attending Siggraph Asia 2022! See you folks there!
+    Gave an intro talk about my and group's research at WinterGraph 2023 held in St.Johann / Pongau.
 
 - date: 2022-03-05
   content: >
-    I would be presenting mine and my group's research at WinterGraph 2022 held in Kaprun.
+    Gave an intro talk about my and group's research at WinterGraph 2022 held in Kaprun.
 
-- date: 2019-05-01
+- date: 2020-05-01
   content: >
-    I affiliated with the Bickel Group. Looking forward to working on cool fabrication projects!
+    Joined the Bickel Group. Looking forward to working on cool fabrication projects!
 
 - date: 2019-09-15
   content: >
-    I am starting my PhD journey at the Institute of Science and Technology, Austria. 
+    Started my PhD journey at the Institute of Science and Technology, Austria. 
 
 - date: 2019-08-10
   content: >
