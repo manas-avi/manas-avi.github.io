@@ -27,9 +27,7 @@ platforms:
   - name: Twitter
     icon: <i class="fa-brands fa-twitter"></i>
     link: https://twitter.com/Manas161997/  
-  # - name: ISTA
-  #   icon: 
-  #   link: hhttps://ist.ac.at/en/research/bickel-group/    
+
 
 collections:
   publications:
