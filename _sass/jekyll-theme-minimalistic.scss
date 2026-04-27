@@ -277,7 +277,7 @@ kbd {
   }
 
   .image, .text {
-    max-width: 50%; /* Allow full width for both image and text */
+    max-width: 100%;
   }
 }
 
@@ -289,14 +289,14 @@ kbd {
 .sidebar {
   width: 250px;
   float: left;
-  position: float;
-  -webkit-font-smoothing: subpixel-antialiased;
+  position: sticky;
   top: 0;
+  -webkit-font-smoothing: subpixel-antialiased;
   padding: 0px 0 0px 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: calc(100vh - 108px);
+  height: 100vh;
   overflow-x: scroll;
   overflow-y: scroll;
   -ms-overflow-style: -ms-autohiding-scrollbar;
@@ -318,7 +318,7 @@ strong {
 }
 
 section {
-  width: 70%;
+  width: calc(100% - 270px);
   float: right;
   padding-bottom:30px;
 }
@@ -357,11 +357,10 @@ hr {
 
   .sidebar {
     width: 200px;
-    height: calc(100vh - 50px);  
   }
 
   section {
-    width: 375px;
+    width: calc(100% - 220px);
   }
 
   .sidebar-footer {
