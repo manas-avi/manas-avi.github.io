@@ -38,7 +38,7 @@ affiliations:
   - name: CAL
     url: https://www.caltech.edu/
   - name: UofOs
-    url: The University of Osaka
+    url: https://www.osaka-u.ac.jp/en
 
 publication: Arxiv (under submission)
 date: 2025-08-31
