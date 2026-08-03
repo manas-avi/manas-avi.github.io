@@ -35,6 +35,17 @@ collections:
     permalink: /:collection/:path/
 
 
+# pcbend-demo/ is the PCBend fold viewer, shared by link rather than published.
+# jekyll-sitemap picks up any .html it finds, so keep it out of sitemap.xml --
+# listing an unlinked page is an open invitation to crawl it. The page also
+# carries its own <meta name="robots" content="noindex, nofollow">.
+defaults:
+  - scope:
+      path: "pcbend-demo"
+    values:
+      sitemap: false
+
+
 navigation:
   # - name: Readme
   #   link: ./index.html
