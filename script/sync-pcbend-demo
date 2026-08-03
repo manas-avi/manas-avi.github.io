@@ -1,0 +1,37 @@
+#!/bin/sh
+# Refresh pcbend-demo/ from a spin-off checkout.
+#
+# pcbend-demo/ is the PCBend fold viewer, served at /pcbend-demo/. It is a
+# generated copy -- never hand-edit it, because this script wipes it. Make
+# changes in the spin-off repo and re-run.
+#
+# Only the four static paths are copied. server.py needs a 2.9 GB C++ pipeline
+# and an X11 display, so the backend is deliberately left behind; the app already
+# degrades to viewer-only when /api/config 404s. pcbend.config.json holds
+# machine-specific absolute paths and _harness.html is a test rig that Jekyll
+# would drop anyway (leading underscore).
+#
+# Usage: script/sync-pcbend-demo [path-to-spin-off]
+set -e
+
+SRC="${1:-$HOME/Desktop/spin-off}"
+DEST="$(cd "$(dirname "$0")/.." && pwd)/pcbend-demo"
+
+for f in index.html app.js style.css assets; do
+  test -e "$SRC/$f" || { echo "not a spin-off checkout: $SRC/$f missing" >&2; exit 1; }
+done
+
+# The manifest is how the app finds each fold's files on a host that serves no
+# directory listing, which GitHub Pages does not. Without it every fold 404s.
+test -f "$SRC/assets/manifest.json" || {
+  echo "$SRC/assets/manifest.json missing -- run: python3 server.py --write-manifest" >&2
+  exit 1
+}
+
+rm -rf "$DEST"
+mkdir -p "$DEST"
+cp "$SRC/index.html" "$SRC/app.js" "$SRC/style.css" "$DEST/"
+cp -R "$SRC/assets" "$DEST/assets"
+
+echo "synced $(du -sh "$DEST" | cut -f1) -> ${DEST#"$(cd "$(dirname "$0")/.." && pwd)/"}"
+echo "folds: $(python3 -c "import json;print(', '.join(f['folder'] for f in json.load(open('$DEST/assets/manifest.json'))['folders']))")"

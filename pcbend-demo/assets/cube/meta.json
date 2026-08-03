@@ -1,0 +1,13 @@
+{
+  "mesh": "cube-012",
+  "folder": "cube",
+  "config": "big-dihedral",
+  "source_name": "cube-012.off",
+  "geom_sha": "6abb936b5e8ff2aeea497ff9c0496eac80b8825c5ff4ec70c0080fb720b2099b",
+  "faces": 12,
+  "faces_before_decimation": null,
+  "passed": 12,
+  "failed": 0,
+  "generated_at": "2026-07-30T15:00:24",
+  "pcbend_result_dir": "/home/mbhargav/Desktop/phd/electronics/pcbend/data/results/cube-012_big-dihedral"
+}

@@ -1,0 +1,13 @@
+{
+  "mesh": "star-024",
+  "folder": "star",
+  "config": "big-dihedral",
+  "source_name": "star-024.off",
+  "geom_sha": "fda3f6792d65701cd2b36a30eeb63c537277ebb0be270ce2c7efd432e4f5e154",
+  "faces": 24,
+  "faces_before_decimation": null,
+  "passed": 24,
+  "failed": 0,
+  "generated_at": "2026-07-31T13:33:52",
+  "pcbend_result_dir": "/home/mbhargav/Desktop/phd/electronics/pcbend/data/results/star-024_big-dihedral"
+}

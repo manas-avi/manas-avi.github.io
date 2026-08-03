@@ -1,0 +1,13 @@
+{
+  "mesh": "cat-102",
+  "folder": "cat",
+  "config": "big-dihedral",
+  "source_name": "cat-102.off",
+  "geom_sha": "855b85bfcfd815b2ddbdc48fec99042e33d3a5b3663c37a6fef484957a657e7f",
+  "faces": 102,
+  "faces_before_decimation": null,
+  "passed": 102,
+  "failed": 0,
+  "generated_at": "2026-07-30T15:33:01",
+  "pcbend_result_dir": "/home/mbhargav/Desktop/phd/electronics/pcbend/data/results/cat-102_big-dihedral"
+}

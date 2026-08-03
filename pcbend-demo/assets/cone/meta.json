@@ -1,0 +1,13 @@
+{
+  "mesh": "cone-030",
+  "folder": "cone",
+  "config": "big-dihedral",
+  "source_name": "cone-030.off",
+  "geom_sha": "4b3a0f243d68f245043860d0118b0682940ad4a1cf4b2026fdb925445c9ac344",
+  "faces": 30,
+  "faces_before_decimation": null,
+  "passed": 28,
+  "failed": 2,
+  "generated_at": "2026-07-31T11:07:40",
+  "pcbend_result_dir": "/home/mbhargav/Desktop/phd/electronics/pcbend/data/results/cone-030_big-dihedral"
+}

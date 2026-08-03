@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCBend — Foldable PCB Fold Viewer</title>
+  <meta name="description" content="Interactive viewer for PCBend: watch a flat
+        flexible circuit board fold into a 3D shape and light up its LEDs." />
+  <!-- This page is shared by link, not published: keep it out of search results. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Drop zone (shown when no file is loaded) -->
+  <div id="dropzone">
+    <div class="dropzone-inner">
+      <div class="dropzone-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="16" width="48" height="36" rx="3"/>
+          <polyline points="20,28 32,20 44,28"/>
+          <line x1="32" y1="20" x2="32" y2="44"/>
+          <path d="M8 28 L2 28 L2 58 L62 58 L62 28 L56 28"/>
+        </svg>
+      </div>
+      <h1>3D Mesh Viewer</h1>
+      <p class="subtitle">Drop a mesh file here or click to browse</p>
+      <p class="formats">Supported formats: <span>.obj</span> <span>.stl</span> <span>.ply</span> <span>.gltf</span> <span>.glb</span> <span>.off</span></p>
+      <button id="browse-btn" class="btn-primary">Browse File</button>
+      <input type="file" id="file-input" accept=".obj,.stl,.ply,.gltf,.glb,.off" hidden />
+
+      <div class="fold-section">
+        <div class="fold-divider"></div>
+        <p class="fold-label">Or animate a fold</p>
+        <div class="fold-input-row">
+          <!-- Two pickers, one shown: the select is filled from
+               assets/manifest.json, and the text input is the fallback for a
+               copy with no manifest, where the folder names are unknowable. -->
+          <select id="fold-folder-select" class="hidden"></select>
+          <input id="fold-folder-input" type="text" placeholder="Folder name (e.g. icosa)" />
+          <button id="fold-load-btn" class="btn-primary">Load Fold</button>
+        </div>
+        <p class="fold-hint" id="gen-hint"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Viewer (shown after a file is loaded) -->
+  <div id="viewer" class="hidden">
+    <canvas id="canvas"></canvas>
+
+    <!-- Controls panel (top-right overlay) -->
+    <div id="controls-panel">
+      <div class="panel-header">
+        <div id="file-info">
+          <span id="file-name">No file</span>
+          <span id="format-badge"></span>
+        </div>
+        <button id="close-btn" class="btn-icon" title="Load new file">&#x2715;</button>
+      </div>
+      <div id="mesh-stats"></div>
+      <div class="panel-divider"></div>
+      <div class="panel-actions">
+        <button id="wireframe-btn" class="btn-secondary">Wireframe: Off</button>
+        <button id="reset-camera-btn" class="btn-secondary">Reset Camera</button>
+      </div>
+      <div class="panel-help">
+        <span>Orbit: Left drag</span>
+        <span>Pan: Right drag</span>
+        <span>Zoom: Scroll</span>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Loading mesh&hellip;</p>
+    </div>
+
+  </div>
+
+  <!-- Error toast (global — outside #viewer so it works in all panels) -->
+  <div id="error-toast" class="hidden"></div>
+
+  <!-- PCB generation job panel (global, for the same reason as the toast: the
+       run outlives the switch from the mesh viewer to the fold viewer) -->
+  <div id="gen-panel" class="hidden">
+    <div class="panel-header">
+      <div id="gen-info">
+        <span id="gen-title">Generating PCB</span>
+        <span id="gen-badge">QUEUED</span>
+      </div>
+      <button id="gen-close-btn" class="btn-icon" title="Hide (the run continues)">&#x2715;</button>
+    </div>
+    <div id="gen-row">
+      <div class="spinner spinner-sm"></div>
+      <span id="gen-stage">Starting&hellip;</span>
+    </div>
+    <div id="gen-bar"><div id="gen-bar-fill"></div></div>
+    <pre id="gen-log"></pre>
+    <div class="panel-divider"></div>
+    <div class="panel-actions">
+      <button id="gen-open-btn" class="btn-secondary hidden">Open fold viewer</button>
+      <button id="gen-cancel-btn" class="btn-secondary">Cancel run</button>
+    </div>
+  </div>
+
+  <!-- Fold Animation Viewer -->
+  <div id="fold-viewer" class="hidden">
+    <canvas id="fold-canvas"></canvas>
+
+    <div id="fold-controls-panel">
+      <div class="panel-header">
+        <div id="fold-file-info">
+          <span id="fold-folder-name">&mdash;</span>
+          <span id="fold-format-badge">SHEET &middot; LED</span>
+        </div>
+        <button id="fold-close-btn" class="btn-icon" title="Close">&#x2715;</button>
+      </div>
+      <div id="fold-stats"></div>
+      <div class="panel-divider"></div>
+      <label class="panel-select" for="fold-effect">
+        <span>LED effect</span>
+        <select id="fold-effect"></select>
+      </label>
+      <div class="panel-actions">
+        <button id="fold-domain-btn" class="btn-secondary">Domain: Wiring</button>
+        <button id="fold-leds-btn" class="btn-secondary">LEDs: On</button>
+        <button id="fold-hinges-btn" class="btn-secondary">Hinges: On</button>
+        <button id="fold-chain-btn" class="btn-secondary">Chain: On</button>
+        <button id="fold-wireframe-btn" class="btn-secondary">Wireframe: Off</button>
+      </div>
+      <div class="panel-divider"></div>
+      <label class="panel-slider" for="fold-brightness">
+        <span>LED brightness</span>
+        <input id="fold-brightness" type="range" min="0" max="200" value="200" />
+      </label>
+      <label class="panel-slider" for="fold-speed">
+        <span>Effect speed</span>
+        <input id="fold-speed" type="range" min="10" max="300" value="100" />
+      </label>
+      <div class="panel-divider"></div>
+      <div class="panel-label">Environment</div>
+      <div id="fold-env-list" class="panel-actions"></div>
+      <label class="panel-slider" for="fold-exposure">
+        <span>Exposure</span>
+        <input id="fold-exposure" type="range" min="20" max="300" value="100" />
+      </label>
+      <!-- Not a duplicate of LED brightness: that gains the emitter colours (how
+           bright the LEDs look), this is how much they illuminate the room. -->
+      <label class="panel-slider" for="fold-lamp-gain">
+        <span>Lamp gain</span>
+        <input id="fold-lamp-gain" type="range" min="0" max="400" value="100" />
+      </label>
+      <!-- Each LED is a directed emitter aimed along its own face normal; this is the
+           cone half-angle. 90 is a broad wash, 15 is a tight spot. -->
+      <label class="panel-slider" for="fold-beam">
+        <span>LED beam angle</span>
+        <input id="fold-beam" type="range" min="5" max="90" value="55" />
+      </label>
+      <!-- Diffuser cells: a translucent panel over each face with the LEDs sealed
+           inside, lit by transmission from behind. Standoff is in tenths of a mm. -->
+      <label class="panel-slider" for="fold-diff-standoff">
+        <span>Diffuser standoff</span>
+        <input id="fold-diff-standoff" type="range" min="5" max="80" value="30" />
+      </label>
+      <label class="panel-slider" for="fold-diff-glow">
+        <span>Diffuser glow</span>
+        <input id="fold-diff-glow" type="range" min="0" max="400" value="100" />
+      </label>
+      <div class="panel-divider"></div>
+      <!-- A source mesh's "up" is whatever the modeller chose, so the lamp often needs
+           a fixed correction before it stands on the floor properly (the cat wants 90
+           about Y). Degrees, applied as Euler XYZ. -->
+      <div class="panel-label">Orient (deg)</div>
+      <div class="panel-triple">
+        <label>X<input id="fold-orient-x" type="number" step="15" value="0" /></label>
+        <label>Y<input id="fold-orient-y" type="number" step="15" value="0" /></label>
+        <label>Z<input id="fold-orient-z" type="number" step="15" value="0" /></label>
+      </div>
+      <div class="panel-actions">
+        <button id="fold-orient-reset" class="btn-secondary">Reset orientation</button>
+        <button id="fold-rig-btn" class="btn-secondary">Room: On</button>
+        <button id="fold-boardenv-btn" class="btn-secondary">Board env: On</button>
+        <button id="fold-diffuser-btn" class="btn-secondary">Diffuser: Off</button>
+        <button id="fold-spin-btn" class="btn-secondary">Spin: Off</button>
+      </div>
+      <div class="panel-help">
+        <span>Orbit: Left drag</span>
+        <span>Pan: Right drag</span>
+        <span>Zoom: Scroll</span>
+      </div>
+    </div>
+
+    <div id="fold-anim-bar">
+      <button id="fold-play-btn" class="btn-secondary">&#9654; Play</button>
+      <input id="fold-slider" type="range" min="0" max="100" value="0" />
+      <span id="fold-percent">0%</span>
+    </div>
+
+    <div id="fold-loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Loading fold&hellip;</p>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

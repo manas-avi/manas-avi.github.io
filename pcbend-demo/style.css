@@ -1,0 +1,673 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f0f1a;
+  --surface: rgba(20, 20, 40, 0.92);
+  --border: rgba(100, 120, 255, 0.25);
+  --accent: #6c7fff;
+  --accent-hover: #8a94ff;
+  --text: #e0e0f0;
+  --text-muted: #7a7a9a;
+  --danger: #ff6b6b;
+  --radius: 10px;
+  --font: system-ui, -apple-system, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+}
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+
+/* ── Drop Zone ── */
+#dropzone {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+#dropzone.drag-over {
+  background: rgba(108, 127, 255, 0.08);
+}
+
+#dropzone.drag-over .dropzone-inner {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108, 127, 255, 0.2);
+}
+
+.dropzone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 80px;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  max-width: 480px;
+  width: 90%;
+}
+
+.dropzone-icon {
+  width: 72px;
+  height: 72px;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.dropzone-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.formats {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.formats span {
+  background: rgba(108, 127, 255, 0.12);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+/* ── Viewer ── */
+#viewer {
+  position: fixed;
+  inset: 0;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Controls Panel ── */
+#controls-panel {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#file-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+#format-badge, #fold-format-badge, #gen-badge {
+  font-size: 0.7rem;
+  font-family: monospace;
+  background: rgba(108, 127, 255, 0.15);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+#mesh-stats {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.panel-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-select {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.panel-select select {
+  width: 100%;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.panel-select select:hover {
+  border-color: var(--accent);
+}
+
+.panel-select select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* The popup list is drawn by the OS, so force readable colours there too. */
+.panel-select select option,
+.panel-select select optgroup {
+  background: #16161f;
+  color: #e8e8f0;
+}
+
+/* Section heading, matching .panel-select / .panel-slider label typography. */
+.panel-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Three equal numeric fields on one row — the X/Y/Z orientation entry. */
+.panel-triple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.panel-triple label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.panel-triple input {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 4px;
+  font: inherit;
+  font-size: 0.74rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.panel-triple input:hover { border-color: var(--accent); }
+.panel-triple input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.panel-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.panel-slider input[type="range"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 4px;
+  width: 100%;
+}
+
+.panel-help {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-secondary {
+  background: rgba(108, 127, 255, 0.1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: left;
+}
+
+.btn-secondary:hover {
+  background: rgba(108, 127, 255, 0.2);
+  border-color: var(--accent);
+}
+
+.btn-secondary.active {
+  background: rgba(108, 127, 255, 0.25);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  color: var(--danger);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* ── Loading ── */
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(15, 15, 26, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(108, 127, 255, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error Toast ── */
+#error-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ffaaaa;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Fold section (inside dropzone) ── */
+.fold-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.fold-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}
+
+.fold-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.fold-hint {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+  min-height: 1em;
+}
+
+.fold-hint.error { color: var(--danger); }
+
+.fold-input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+/* The select and the input are alternatives -- only one is ever visible -- so
+   they share a look; whichever one you get should not feel like a different
+   control. */
+#fold-folder-input,
+#fold-folder-select {
+  flex: 1;
+  background: rgba(108, 127, 255, 0.07);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#fold-folder-input:focus,
+#fold-folder-select:focus {
+  border-color: var(--accent);
+}
+
+/* The native menu is drawn by the OS, so its options need a colour of their own
+   or a dark-theme dropdown shows dark text on a dark background. */
+#fold-folder-select option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+#fold-folder-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Fold viewer ── */
+#fold-viewer {
+  position: fixed;
+  inset: 0;
+}
+
+#fold-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#fold-controls-panel {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+  /* With the environment section this panel exceeds a laptop viewport. Wheel events
+     over the panel never reach OrbitControls (bound to the canvas, a lower sibling),
+     so scrolling here cannot fight the camera zoom. */
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* The OS scrollbar is light-on-light against --surface. Literal rgba rather than a
+   new --surface-2: that name is referenced by .panel-select but never defined, so
+   declaring it would silently restyle the existing LED-effect dropdown. */
+#fold-controls-panel::-webkit-scrollbar { width: 8px; }
+#fold-controls-panel::-webkit-scrollbar-track { background: transparent; }
+#fold-controls-panel::-webkit-scrollbar-thumb {
+  background: rgba(100, 120, 255, 0.35);
+  border-radius: 4px;
+}
+#fold-controls-panel::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+#fold-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#fold-folder-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+#fold-stats {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Animation bar ── */
+#fold-anim-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 20;
+  min-width: 360px;
+}
+
+#fold-slider {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 4px;
+}
+
+#fold-percent {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Fold loading overlay ── */
+#fold-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(15, 15, 26, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ── PCB generation panel ── */
+/* Top-left, mirroring #controls-panel, so it never overlaps the right-hand
+   panels of either viewer. Above #loading (30), below #error-toast (50). */
+#gen-panel {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 288px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 40;
+}
+
+#gen-panel.state-warn  { border-color: rgba(255, 190, 80, 0.45); }
+#gen-panel.state-error { border-color: rgba(255, 107, 107, 0.4); }
+
+#gen-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#gen-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+#gen-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  flex-shrink: 0;
+}
+
+#gen-panel.done .spinner-sm,
+#gen-panel.state-error .spinner-sm { display: none; }
+
+#gen-stage {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+#gen-bar {
+  height: 4px;
+  background: rgba(108, 127, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#gen-bar-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+#gen-panel.state-error #gen-bar-fill { background: var(--danger); }
+
+#gen-log {
+  font-family: monospace;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+#gen-log:empty { display: none; }
