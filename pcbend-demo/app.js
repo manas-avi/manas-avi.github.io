@@ -361,7 +361,7 @@ const foldEffectSel    = document.getElementById('fold-effect');
 const foldDomainBtn    = document.getElementById('fold-domain-btn');
 const foldBrightness   = document.getElementById('fold-brightness');
 const foldSpeed        = document.getElementById('fold-speed');
-const foldEnvList      = document.getElementById('fold-env-list');
+const foldEnvSel       = document.getElementById('fold-env');
 const foldExposure     = document.getElementById('fold-exposure');
 const foldLampGain     = document.getElementById('fold-lamp-gain');
 const foldRigBtn       = document.getElementById('fold-rig-btn');
@@ -648,7 +648,6 @@ let foldShowDiffuser = false;   // off by default: it is a look, not a diagnosti
 let foldWireframeOn = false;
 let foldAnimating   = false;
 let foldT           = 0;
-let foldDir         = 1;
 let foldRafId       = null;
 let foldShowLeds   = true;
 let foldShowHinges = true;
@@ -700,13 +699,10 @@ function initFoldScene() {
 
   foldGroup = new THREE.Group();
   foldScene.add(foldGroup);
-
-  // A scene picked before the renderer existed was parked; apply it now.
-  if (pendingEnvId) {
-    const id = pendingEnvId;
-    pendingEnvId = null;
-    setEnvironment(id);
-  }
+  // A parked scene is NOT applied here: setEnvironment() bakes and sizes a rig, and at
+  // this point in loadFoldViewer the model does not exist yet, so measureFolded() would
+  // return null and buildRig() would no-op. It is applied at the end of the load, where
+  // the fit is measurable — see the env block there.
 }
 
 function startFoldRenderLoop() {
@@ -1360,7 +1356,7 @@ let stripRGB   = null;         // Uint8Array(n * 3), the pixel buffer
 let stripOrder = null;         // Int32Array(n), strip slot -> LED index
 let stripFreq  = 1;            // SPATIAL_REF / n
 let stripDomain = 'wiring';    // 'wiring' (.map order) or 'spatial' (by height)
-let effectId   = 'chase';
+let effectId   = 'rainbow';
 let effectAcc  = 0;            // ms accumulated toward the next step
 let effectState = {};          // per-effect scratch, (re)built by reset()
 
@@ -2655,13 +2651,18 @@ const ENVIRONMENTS = [
 const envById = id => ENVIRONMENTS.find(e => e.id === id) || ENVIRONMENTS[0];
 const envCtx = () => ({ THREE, U: ENV_UNIT });
 
-let envId        = 'none';    // nothing changes until the user picks a scene
+const ENV_DEFAULT_ID = 'studio';
+
+let envId        = ENV_DEFAULT_ID;
 let envRoot      = null;      // container Group, sibling of foldGroup
 let envFit       = null;      // { center, size, S, floorY } for the current model
 let envReceivers = [];        // meshes the LED light loop may patch
 let envRigOn     = true;
 let envBoardOn   = true;
-let pendingEnvId = null;      // a scene picked before initFoldScene() ran
+// A scene picked before initFoldScene() ran. Seeded with the default so the opening
+// scene is applied by the same path as a user pick — envId alone only sets the control,
+// it does not build the rig or touch the renderer's tone mapping.
+let pendingEnvId = ENV_DEFAULT_ID;
 
 // ── Env rig placement ─────────────────────────────────────────────────────────
 //
@@ -2934,27 +2935,23 @@ function applyEnvFade() {
 // truth for the control, built once at module load.
 
 function populateEnvList() {
-  if (!foldEnvList) return;
-  foldEnvList.textContent = '';
+  if (!foldEnvSel) return;
+  foldEnvSel.textContent = '';
   for (const e of ENVIRONMENTS) {
-    const b = document.createElement('button');
-    b.className = 'btn-secondary';
-    b.dataset.envId = e.id;
-    b.textContent = e.label;
-    b.addEventListener('click', () => setEnvironment(e.id));
-    foldEnvList.appendChild(b);
+    const o = document.createElement('option');
+    o.value = e.id;
+    o.textContent = e.label;
+    foldEnvSel.appendChild(o);
   }
   paintEnvList();
 }
 populateEnvList();
 
-// The selection can change without a click (a debug hook, a programmatic switch),
-// so the highlight is re-read from state — the same reasoning as refreshToggles().
+// The selection can change without a change event (a debug hook, a programmatic
+// switch), so the control is re-read from state — the same reasoning as
+// refreshToggles(), and the same guard populateEffectSelect() uses.
 function paintEnvList() {
-  if (!foldEnvList) return;
-  for (const b of foldEnvList.children) {
-    b.classList.toggle('active', b.dataset.envId === envId);
-  }
+  if (foldEnvSel && foldEnvSel.value !== envId) foldEnvSel.value = envId;
 }
 
 const uiExposure = () => Math.max(0.05, Number(foldExposure?.value ?? 100) / 100);
@@ -3024,6 +3021,19 @@ const SPIN_PERIOD = 14;    // seconds per revolution
 let foldSpinning  = false;
 let foldSpinAngle = 0;
 const foldOrient  = { x: 0, y: 0, z: 0 };   // degrees
+
+// Per-model corrections, keyed by asset family. A family is the folder name with any
+// trailing "-<number>" variant suffix stripped, so one entry covers cat-0.2 and cat-0.5.
+// Models with no entry orient to zero, which makes every load deterministic instead of
+// inheriting whatever the previously loaded model was dialled to.
+const MODEL_ORIENT = {
+  cat: { x: 270, y: 0, z: 45 },
+};
+
+function defaultOrientFor(folderName) {
+  const family = String(folderName || '').toLowerCase().replace(/-[\d.]+$/, '');
+  return MODEL_ORIENT[family] ?? { x: 0, y: 0, z: 0 };
+}
 
 const _pivotVec  = new THREE.Vector3();
 const _orientEul = new THREE.Euler();
@@ -3113,10 +3123,17 @@ function resetFoldTransform() {
 // ── Fold animation tick ───────────────────────────────────────────────────────
 const FOLD_PERIOD = 4.5;   // seconds for one flat -> folded sweep
 
+// One-shot: the sweep runs flat -> folded and stops there. It does not unfold again,
+// because the folded state is the one worth looking at — the room fades in for it, and
+// a loop that kept flattening the object would throw that away every few seconds.
+// Pressing Play at 100% replays from flat.
 function advanceFold(dt) {
-  foldT += foldDir * (dt / FOLD_PERIOD);
-  if (foldT >= 1) { foldT = 1; foldDir = -1; }
-  if (foldT <= 0) { foldT = 0; foldDir =  1; }
+  foldT += dt / FOLD_PERIOD;
+  if (foldT >= 1) {
+    foldT = 1;
+    foldAnimating = false;
+    foldPlayBtn.textContent = '▶ Play';
+  }
   setFoldT(foldT);
 }
 
@@ -3261,13 +3278,25 @@ async function loadFoldViewer(folderName) {
     setLedLightBucket(foldModel.ledCount);
     setLedQualityForModel(foldModel.ledCount);
 
-    // foldGroup carries the pivot compensation for the previous model's centre, so it
-    // has to be recomputed against the new one or the model lands offset.
-    applyFoldTransform();
+    // The model's own axes may need a fixed correction to stand up in the room, and
+    // foldGroup still carries the pivot compensation for the PREVIOUS model's centre,
+    // so it has to be recomputed against the new one or the model lands offset.
+    // setOrientation() does both.
+    const orientFix = defaultOrientFor(folderName);
+    setOrientation(orientFix.x, orientFix.y, orientFix.z);
+
+    // A parked scene (the opening default, or one picked before the renderer existed)
+    // gets its full application here rather than in initFoldScene, because a rig can
+    // only be sized once there is a model to measure. Awaited, so its bake cannot land
+    // in the middle of the per-model refit below and leak a second envRoot.
+    const envPreset = envById(envId);
+    if (pendingEnvId) {
+      pendingEnvId = null;
+      await setEnvironment(envPreset.id);
+    }
 
     // The model changed, so the rig has to be re-measured and re-placed. The bake is
     // model-independent (it runs in the normalised frame) and is NOT re-run.
-    const envPreset = envById(envId);
     if (envPreset.build) {
       teardownRig();
       buildRig(envPreset);
@@ -3351,6 +3380,9 @@ foldCloseBtn.addEventListener('click', () => {
   dropzone.classList.remove('hidden');
   teardownRig();
   disposeEnvironments();
+  // The bake cache and foldScene.environment went with it, so the next load has to
+  // re-run the full apply rather than just refitting a rig around a dead texture.
+  pendingEnvId = envId;
 });
 
 foldSlider.addEventListener('input', () => {
@@ -3362,7 +3394,8 @@ foldSlider.addEventListener('input', () => {
 foldPlayBtn.addEventListener('click', () => {
   foldAnimating = !foldAnimating;
   foldPlayBtn.textContent = foldAnimating ? '⏸ Pause' : '▶ Play';
-  if (foldAnimating) foldDir = foldT >= 1 ? -1 : 1;
+  // Already folded: rewind, otherwise Play would have nothing left to run.
+  if (foldAnimating && foldT >= 1) setFoldT(0);
 });
 
 foldWireframeBtn.addEventListener('click', () => {
@@ -3410,6 +3443,7 @@ bindToggle(foldDomainBtn, 'Domain', () => stripDomain === 'spatial', v => {
 }, ['Spatial', 'Wiring']);
 
 foldEffectSel?.addEventListener('change', () => setEffect(foldEffectSel.value));
+foldEnvSel?.addEventListener('change', () => setEnvironment(foldEnvSel.value));
 foldBrightness?.addEventListener('input', () => uploadStrip());
 
 bindToggle(foldRigBtn, 'Room', () => envRigOn, v => {

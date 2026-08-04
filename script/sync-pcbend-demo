@@ -15,6 +15,7 @@
 set -e
 
 SRC="${1:-$HOME/Desktop/spin-off}"
+# SRC="${1:-$HOME/Desktop/spin-off/spin-off}"
 DEST="$(cd "$(dirname "$0")/.." && pwd)/pcbend-demo"
 
 for f in index.html app.js style.css assets; do
