@@ -654,6 +654,16 @@ let foldShowHinges = true;
 let foldShowChain  = false;
 let foldLastTime   = 0;
 
+// The LEDs only run once the shape is fully folded. A half-folded board is a
+// fabrication view — the lamp is not a lamp until it is closed — and this is also
+// what makes Play a reveal: the room fades in (see envFade) and the strip comes up
+// at the end of the sweep. Not a taper: "completely folded" is a state, not a
+// degree, so the gate is binary. The epsilon is there because the slider's 100
+// steps and the fold integrator both land on 1 exactly, but a hand-set t of 0.9999
+// from a debug hook should still count as closed.
+const LED_ON_T = 0.999;
+const ledsLit = () => foldT >= LED_ON_T;
+
 // The three base lights are module-level rather than locals of initFoldScene because
 // an environment preset has to be able to dim them: a "dark room" scene where the
 // board is the only light source cannot have a 1.15 key light in it. ENV_BASE records
@@ -1286,6 +1296,7 @@ function applyTransforms(faceA, local, target, faceB, weight) {
 }
 
 function setFoldT(t) {
+  const wasLit = ledsLit();
   foldT = Math.max(0, Math.min(1, t));
   foldSlider.value = Math.round(foldT * 100);
   foldPercentEl.textContent = `${Math.round(foldT * 100)}%`;
@@ -1328,6 +1339,12 @@ function setFoldT(t) {
     rebuildStripOrder();
     uploadStrip();
   }
+  // Crossing the on-gate has to rewrite the emitter colours. The cast light and the
+  // diffuser glow come for free (updateLedLights runs every frame), but the colour
+  // attribute is only written on an effect step, and a static effect — 'off', 'solid',
+  // or a paused one — would leave the discs at their pre-gate brightness indefinitely.
+  if (ledsLit() !== wasLit) uploadStrip();
+
   // A handful of scalar writes, negligible against the vertex pass above.
   applyEnvFade();
 }
@@ -1596,6 +1613,12 @@ function ensureLedLightTex() {
 
 const ledBucketFor = n =>
   LED_BUCKETS.find(b => b >= n) ?? LED_BUCKETS[LED_BUCKETS.length - 1];
+
+// One gain for the emitter discs and the cast light both, so they can never disagree
+// about how bright an LED is. Folds the on-gate in: below it the strip is dark, which
+// leaves the board a plain PCB while it folds instead of a lit one lying flat.
+const ledGain = () =>
+  ledsLit() ? Math.max(0, Number(foldBrightness?.value ?? 100) / 100) : 0;
 
 const uiLampGain = () => Math.max(0, Number(foldLampGain?.value ?? 100) / 100);
 
@@ -2008,7 +2031,11 @@ function updateLedLights() {
   // Note ledGlowMaterials as well as ledReceivers: the diffuser works with no
   // environment preset selected, in which case there are no room receivers at all.
   const anyConsumer = ledReceivers.length || (foldShowDiffuser && ledGlowMaterials.length);
-  if (!ledLightOn || !foldModel || !foldModel.ledCount || !stripRGB || !anyConsumer) {
+  // ledsLit() is checked here rather than left to a zero ledGain() below, because the
+  // compaction pass keys off stripRGB and would happily upload a full texture of black
+  // lights for every receiver to walk.
+  if (!ledLightOn || !ledsLit() || !foldModel || !foldModel.ledCount || !stripRGB ||
+      !anyConsumer) {
     ledLightUniforms.uLedCount.value = 0;
     ledGlowUniforms.uLedCount.value = 0;
     ledLitCount = 0;
@@ -2031,7 +2058,7 @@ function updateLedLights() {
   const n = foldModel.ledCount;
   // The same gain uploadStrip() uses, so the cast light and the visible emitter disc
   // can never disagree about how bright an LED is.
-  const gain = Number(foldBrightness?.value ?? 100) / 100;
+  const gain = ledGain();
   const cutoff = ledLightUniforms.uLedCutoff.value;
 
   // Compact. A black LED contributes exactly zero, so it costs a texel and a loop
@@ -2103,7 +2130,7 @@ function uploadStrip() {
   if (!foldLedMesh || !foldModel || !stripRGB) return;
   const colors = foldLedMesh.geometry.attributes.color;
   const arr = colors.array;
-  const gain = Number(foldBrightness?.value ?? 100) / 100;
+  const gain = ledGain();
   const n = foldModel.ledCount;
 
   for (let k = 0; k < n; k++) {
@@ -3564,6 +3591,9 @@ window.foldDebug = {
     }
     return {
       on: ledLightOn, lit: ledLitCount, ledCount: foldModel?.ledCount ?? 0,
+      // gated is the fold on-gate: false means every count below is zero by design,
+      // not because the light path broke.
+      gated: ledsLit(), gain: ledGain(),
       maxLeds: ledLightMax, budget: ledLightBudget,
       shadingRate: ledPerVertex ? 'vertex' : 'fragment',
       autoQuality: ledAutoQuality, frameMs: +ledFrameMs.toFixed(1),

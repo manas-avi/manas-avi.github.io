@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-03T22:25:20",
+  "generated_at": "2026-08-04T15:43:05",
   "folders": [
     {
       "folder": "batman",
@@ -13,7 +13,7 @@
       }
     },
     {
-      "folder": "cat-0.2",
+      "folder": "cat",
       "mesh": "cat-102",
       "faces": 102,
       "files": {
@@ -21,39 +21,6 @@
         "sheet": "cat-102.sheet",
         "led": "cat-102.led",
         "map": "cat-102.map"
-      }
-    },
-    {
-      "folder": "cat-0.5",
-      "mesh": "cat-102",
-      "faces": 102,
-      "files": {
-        "off": "cat-102.off",
-        "sheet": "cat-102.sheet",
-        "led": "cat-102.led",
-        "map": "cat-102.map"
-      }
-    },
-    {
-      "folder": "cone",
-      "mesh": "cone-030",
-      "faces": 30,
-      "files": {
-        "off": "cone-030.off",
-        "sheet": "cone-030.sheet",
-        "led": "cone-030.led",
-        "map": "cone-030.map"
-      }
-    },
-    {
-      "folder": "cube",
-      "mesh": "cube-012",
-      "faces": 12,
-      "files": {
-        "off": "cube-012.off",
-        "sheet": "cube-012.sheet",
-        "led": "cube-012.led",
-        "map": "cube-012.map"
       }
     },
     {
@@ -76,17 +43,6 @@
         "sheet": "star-024.sheet",
         "led": "star-024.led",
         "map": "star-024.map"
-      }
-    },
-    {
-      "folder": "trap",
-      "mesh": "trap-004",
-      "faces": 4,
-      "files": {
-        "off": "trap-004.off",
-        "sheet": "trap-004.sheet",
-        "led": "trap-004.led",
-        "map": "trap-004.map"
       }
     }
   ]
