@@ -1,0 +1,13 @@
+{
+  "mesh": "batman-092",
+  "folder": "batman",
+  "config": "small-dihedral",
+  "source_name": "batman-092.off",
+  "geom_sha": "f52be12bfd2222587309c1ddb1496db5ac51736340fb81622c6b71474ed19df0",
+  "faces": 92,
+  "faces_before_decimation": null,
+  "passed": 92,
+  "failed": 0,
+  "generated_at": "2026-08-04T16:04:45",
+  "pcbend_result_dir": "/home/mbhargav/Desktop/phd/electronics/pcbend/data/results/batman-092_small-dihedral"
+}

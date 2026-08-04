@@ -588,6 +588,27 @@ function manifestFolders() {
   return assetManifest?.folders ?? [];
 }
 
+// ── Shape families and variants ───────────────────────────────────────────────
+// Every shape is generated twice, under the pipeline's 'small-dihedral' and
+// 'big-dihedral' configs, and lives as two folders: cat-small and cat-big. Same
+// mesh, different unfolding, so a different board — but the same *shape*, which is
+// what a per-model orientation fix is about, and what the server's EXPOSED_SHAPES
+// list is written in terms of.
+//
+// The suffix is split off rather than special-cased at each use so folder -> family
+// is one rule. SHAPE_VARIANTS mirrors server.py's; "-<number>" is the older form
+// (cat-0.2, named after the threshold itself) and is still recognised.
+const SHAPE_VARIANTS = ['small', 'big'];
+const VARIANT_RE = new RegExp(`-(${SHAPE_VARIANTS.join('|')}|[\\d.]+)$`);
+
+// A folder called only 'big' keeps its whole name — otherwise the family is empty.
+function splitVariant(folderName) {
+  const name = String(folderName || '').trim().toLowerCase();
+  const m = VARIANT_RE.exec(name);
+  if (!m || m.index === 0) return { family: name, variant: null };
+  return { family: name.slice(0, m.index), variant: m[1] };
+}
+
 async function discoverFoldFiles(folderName) {
   const dirUrl = `assets/${folderName}/`;
   const manifest = await loadManifest();
@@ -3049,17 +3070,19 @@ let foldSpinning  = false;
 let foldSpinAngle = 0;
 const foldOrient  = { x: 0, y: 0, z: 0 };   // degrees
 
-// Per-model corrections, keyed by asset family. A family is the folder name with any
-// trailing "-<number>" variant suffix stripped, so one entry covers cat-0.2 and cat-0.5.
+// Per-model corrections, keyed by asset FAMILY (see splitVariant): the shape, not the
+// unfolding. cat-small and cat-big are the same animal in the same pose, so they want
+// the same correction and one entry covers both.
 // Models with no entry orient to zero, which makes every load deterministic instead of
 // inheriting whatever the previously loaded model was dialled to.
 const MODEL_ORIENT = {
   cat: { x: 270, y: 0, z: 45 },
+  bridge: { x: 270, y: 0, z: 0 },
+  dome: { x: 90, y: 180, z: 0 },
 };
 
 function defaultOrientFor(folderName) {
-  const family = String(folderName || '').toLowerCase().replace(/-[\d.]+$/, '');
-  return MODEL_ORIENT[family] ?? { x: 0, y: 0, z: 0 };
+  return MODEL_ORIENT[splitVariant(folderName).family] ?? { x: 0, y: 0, z: 0 };
 }
 
 const _pivotVec  = new THREE.Vector3();
@@ -3372,9 +3395,15 @@ async function refreshFolderPicker() {
   for (const entry of folders) {
     const option = document.createElement('option');
     option.value = entry.folder;
-    option.textContent = entry.faces
-      ? `${entry.folder} — ${entry.faces} faces`
-      : entry.folder;
+    // "cat · small — 102 faces" rather than the raw folder name: the two variants
+    // of a shape differ only by that suffix and sit next to each other in the list,
+    // so it is the part worth setting apart. The manifest carries family/variant;
+    // an older manifest without them is split here instead.
+    const split = splitVariant(entry.folder);
+    const family = entry.family ?? split.family;
+    const variant = entry.variant ?? split.variant;
+    const name = variant ? `${family} · ${variant}` : family;
+    option.textContent = entry.faces ? `${name} — ${entry.faces} faces` : name;
     foldFolderSelect.appendChild(option);
   }
   if (previous && folders.some(f => f.folder === previous)) {

@@ -45,7 +45,7 @@
                assets/manifest.json, and the text input is the fallback for a
                copy with no manifest, where the folder names are unknowable. -->
           <select id="fold-folder-select" class="hidden"></select>
-          <input id="fold-folder-input" type="text" placeholder="Folder name (e.g. icosa)" />
+          <input id="fold-folder-input" type="text" placeholder="Folder name (e.g. icosa-small)" />
           <button id="fold-load-btn" class="btn-primary">Load Fold</button>
         </div>
         <p class="fold-hint" id="gen-hint"></p>
@@ -180,8 +180,8 @@
       </label>
       <div class="panel-divider"></div>
       <!-- A source mesh's "up" is whatever the modeller chose, so the lamp often needs
-           a fixed correction before it stands on the floor properly (the cat wants 90
-           about Y). Degrees, applied as Euler XYZ. -->
+           a fixed correction before it stands on the floor properly. Known ones are
+           applied on load from MODEL_ORIENT; this dials in the rest. Degrees, Euler XYZ. -->
       <div class="panel-label">Orient (deg)</div>
       <div class="panel-triple">
         <label>X<input id="fold-orient-x" type="number" step="15" value="0" /></label>
