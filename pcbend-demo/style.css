@@ -222,6 +222,43 @@ h1 {
   color: #e8e8f0;
 }
 
+/* Several rows that appear and disappear together — the panel's own gap does not
+   apply once they are wrapped, so restate it. */
+.panel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Free-text entry — the scrolling message. Same shell as .panel-select so the two
+   rows line up under one another in the panel. */
+.panel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.panel-text input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.panel-text input::placeholder { color: var(--text-muted); }
+.panel-text input:hover { border-color: var(--accent); }
+.panel-text input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* Section heading, matching .panel-select / .panel-slider label typography. */
 .panel-label {
   font-size: 0.72rem;
@@ -671,3 +708,139 @@ h1 {
 }
 
 #gen-log:empty { display: none; }
+
+/* ── Call to action ── */
+/* Centred at the bottom of whichever viewer is up. z-index 25 clears the fold
+   viewer's #fold-anim-bar (20) but stays under #gen-panel (40) and the toast. */
+#cta-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 20px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 25;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+#cta-btn:hover {
+  background: rgba(108, 127, 255, 0.18);
+  border-color: var(--accent);
+}
+
+#cta-btn:active { transform: translateX(-50%) scale(0.97); }
+
+/* The fold viewer already owns the bottom centre with its scrub bar, so step
+   over it rather than sitting on top of it. */
+body.fold-active #cta-btn { bottom: 88px; }
+
+.cta-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
+}
+
+/* ── Call to action modal ── */
+#cta-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 10, 20, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 60;
+}
+
+#cta-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+#cta-card h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.cta-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cta-section h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.cta-section p {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.cta-action {
+  align-self: flex-start;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.cta-action.btn-secondary { padding: 9px 16px; }
+
+#cta-pdf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cta-pdf-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.cta-pdf-item .cta-pdf-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* The fold currently on screen, so it is findable without reading the list. */
+.cta-pdf-item.current {
+  background: rgba(108, 127, 255, 0.25);
+  border-color: var(--accent);
+}
+
+.cta-note {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}

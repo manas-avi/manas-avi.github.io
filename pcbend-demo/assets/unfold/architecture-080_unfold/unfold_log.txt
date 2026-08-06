@@ -1,0 +1,237 @@
+BEGIN	unfolder	./data/results/unfold//architecture-080_unfold/default-unfold.cfg ./data/meshes/architecture-080.off ./data/results/unfold//architecture-080_unfold/architecture-080.sheet
+left view : 1 right view :2
+./data/meshes/architecture-080.off
+The mesh is open: 18 border edges in 1 boundary loop(s).
+dualEdgeList = [[4 25], [52 44], [52 12], [8 25], [46 4], [26 46], [65 6], [48 8], [34 12], [71 41], [54 31], [54 77], [34 66], [73 66], [48 64], [70 26], [50 29], [70 50], [73 64], [36 41], [57 17], [36 17], [29 60], [60 57], [54 45], [13 65], [21 32], [13 28], [77 74], [67 74], [45 10], [32 55], [33 58], [33 38], [75 17], [76 75], [1 67], [1 37], [28 15], [59 15], [35 55], [23 10], [11 23], [24 35], [72 59], [43 24], [37 16], [33 19], [16 20], [27 76], [69 72], [19 0], [0 27], [47 68], [2 43], [40 20], [14 68], [14 40], [39 69], [22 2], [22 39], [0 9], [40 30], [30 9], [39 49], [9 49], [18 14], [22 62], [42 30], [18 63], [78 49], [79 62], [56 42], [61 63], [79 53], [51 56], [61 5], [7 53], [5 3], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 36
+Iterations done: 161
+Number of overlaps at the end: 0
+Time taken: 1.73628 seconds
+dual edge: 4 25
+dual edge: -1 -1
+dual edge: 31 4
+dual edge: -1 -1
+dual edge: 52 44
+dual edge: 52 12
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 8 25
+dual edge: 46 4
+dual edge: 8 26
+dual edge: 26 46
+dual edge: 52 71
+dual edge: 6 44
+dual edge: 65 6
+dual edge: 71 65
+dual edge: 48 8
+dual edge: -1 -1
+dual edge: 34 12
+dual edge: 34 41
+dual edge: 71 41
+dual edge: 21 6
+dual edge: -1 -1
+dual edge: 54 31
+dual edge: 46 77
+dual edge: 54 77
+dual edge: -1 -1
+dual edge: 34 66
+dual edge: 73 66
+dual edge: 48 64
+dual edge: 29 64
+dual edge: 70 26
+dual edge: 50 29
+dual edge: 70 50
+dual edge: 73 64
+dual edge: 57 66
+dual edge: 36 41
+dual edge: 57 17
+dual edge: 36 17
+dual edge: 29 60
+dual edge: 60 57
+dual edge: 54 45
+dual edge: -1 -1
+dual edge: 13 65
+dual edge: 21 32
+dual edge: 13 32
+dual edge: 36 28
+dual edge: 13 28
+dual edge: 77 74
+dual edge: 67 70
+dual edge: 67 74
+dual edge: 74 10
+dual edge: 45 10
+dual edge: 32 55
+dual edge: -1 -1
+dual edge: 38 60
+dual edge: 50 58
+dual edge: 33 58
+dual edge: 33 38
+dual edge: 75 17
+dual edge: 76 75
+dual edge: 76 38
+dual edge: 1 67
+dual edge: 37 58
+dual edge: 1 37
+dual edge: 28 15
+dual edge: 59 15
+dual edge: 75 59
+dual edge: 35 55
+dual edge: 15 35
+dual edge: 23 10
+dual edge: 11 1
+dual edge: 11 23
+dual edge: -1 -1
+dual edge: 24 35
+dual edge: -1 -1
+dual edge: 72 59
+dual edge: 43 24
+dual edge: 72 43
+dual edge: 37 16
+dual edge: 33 19
+dual edge: 16 20
+dual edge: 19 20
+dual edge: 11 47
+dual edge: 16 47
+dual edge: 27 76
+dual edge: 69 72
+dual edge: 27 69
+dual edge: 19 0
+dual edge: 0 27
+dual edge: 47 68
+dual edge: -1 -1
+dual edge: 2 43
+dual edge: -1 -1
+dual edge: 40 20
+dual edge: 14 68
+dual edge: 14 40
+dual edge: 39 69
+dual edge: 22 2
+dual edge: 22 39
+dual edge: 0 9
+dual edge: 40 30
+dual edge: 30 9
+dual edge: 39 49
+dual edge: 9 49
+dual edge: 18 14
+dual edge: -1 -1
+dual edge: 22 62
+dual edge: -1 -1
+dual edge: 42 30
+dual edge: 18 63
+dual edge: 42 63
+dual edge: 78 49
+dual edge: 79 62
+dual edge: 78 79
+dual edge: 56 42
+dual edge: 56 78
+dual edge: 61 63
+dual edge: -1 -1
+dual edge: 79 53
+dual edge: -1 -1
+dual edge: 51 56
+dual edge: 61 5
+dual edge: 51 5
+dual edge: 7 53
+dual edge: 51 7
+dual edge: -1 -1
+dual edge: 5 3
+dual edge: 7 3
+hinge edge: 4 25
+hinge edge: 31 4
+hinge edge: 52 44
+hinge edge: 52 12
+hinge edge: 46 4
+hinge edge: 26 46
+hinge edge: 6 44
+hinge edge: 65 6
+hinge edge: 71 65
+hinge edge: 48 8
+hinge edge: 34 12
+hinge edge: 71 41
+hinge edge: 54 31
+hinge edge: 73 66
+hinge edge: 48 64
+hinge edge: 29 64
+hinge edge: 70 26
+hinge edge: 70 50
+hinge edge: 73 64
+hinge edge: 57 66
+hinge edge: 36 41
+hinge edge: 57 17
+hinge edge: 36 17
+hinge edge: 54 45
+hinge edge: 13 65
+hinge edge: 21 32
+hinge edge: 13 32
+hinge edge: 36 28
+hinge edge: 77 74
+hinge edge: 67 74
+hinge edge: 74 10
+hinge edge: 45 10
+hinge edge: 32 55
+hinge edge: 38 60
+hinge edge: 50 58
+hinge edge: 33 58
+hinge edge: 33 38
+hinge edge: 76 75
+hinge edge: 1 67
+hinge edge: 1 37
+hinge edge: 28 15
+hinge edge: 59 15
+hinge edge: 75 59
+hinge edge: 35 55
+hinge edge: 23 10
+hinge edge: 11 23
+hinge edge: 24 35
+hinge edge: 43 24
+hinge edge: 72 43
+hinge edge: 37 16
+hinge edge: 16 20
+hinge edge: 19 20
+hinge edge: 11 47
+hinge edge: 27 76
+hinge edge: 27 69
+hinge edge: 19 0
+hinge edge: 0 27
+hinge edge: 47 68
+hinge edge: 2 43
+hinge edge: 14 40
+hinge edge: 22 2
+hinge edge: 22 39
+hinge edge: 0 9
+hinge edge: 30 9
+hinge edge: 39 49
+hinge edge: 18 14
+hinge edge: 18 63
+hinge edge: 42 63
+hinge edge: 78 49
+hinge edge: 79 62
+hinge edge: 78 79
+hinge edge: 56 78
+hinge edge: 61 63
+hinge edge: 79 53
+hinge edge: 51 56
+hinge edge: 61 5
+hinge edge: 7 53
+hinge edge: 5 3
+hinge edge: 7 3
+Number of overlaps at the end of tabu Unfolder:0
+./data/meshes/architecture-080.off
+./data/results/unfold//architecture-080_unfold/architecture-080.sheet
+./data/results/unfold//architecture-080_unfold/architecture-080-sheet.off
+./data/results/unfold//architecture-080_unfold/architecture-080-unfold.svg
+Glue tabs: 26 placed, 6 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//architecture-080_unfold/architecture-080-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+Maximum pair : 65 6 Maximum scaling size : 0.411657 Minimum scaling size : 0.190015
+Using half hinges
+total Half hinge edges: 79
+
+total hinge edges: 79
+
+Done saving sheet file
+END	unfolder	./data/results/unfold//architecture-080_unfold/default-unfold.cfg ./data/meshes/architecture-080.off ./data/results/unfold//architecture-080_unfold/architecture-080.sheet

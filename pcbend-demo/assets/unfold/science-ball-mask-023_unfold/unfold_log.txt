@@ -1,0 +1,94 @@
+BEGIN	unfolder	./data/results/unfold//science-ball-mask-023_unfold/default-unfold.cfg ./data/meshes/science-ball-mask-023.off ./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023.sheet
+left view : 1 right view :2
+./data/meshes/science-ball-mask-023.off
+The mesh is open: 22 border edges in 1 boundary loop(s).
+dualEdgeList = [[14 16], [13 4], [14 13], [19 14], [13 2], [19 18], [7 10], [10 18], [17 18], [10 9], [9 3], [1 5], [9 5], [6 5], [12 6], [11 12], [12 21], [15 20], [20 21], [21 0], [20 8], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 0
+Iterations done: 0
+Number of overlaps at the end: 0
+Time taken: 2e-06 seconds
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 14 16
+dual edge: 13 4
+dual edge: 14 13
+dual edge: -1 -1
+dual edge: 19 14
+dual edge: 13 2
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 19 18
+dual edge: 7 10
+dual edge: 10 18
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 17 18
+dual edge: -1 -1
+dual edge: 10 9
+dual edge: 9 3
+dual edge: -1 -1
+dual edge: 1 17
+dual edge: 1 5
+dual edge: 9 5
+dual edge: -1 -1
+dual edge: 6 5
+dual edge: -1 -1
+dual edge: 12 6
+dual edge: 11 12
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 12 21
+dual edge: -1 -1
+dual edge: 15 20
+dual edge: 20 21
+dual edge: -1 -1
+dual edge: 21 0
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 20 8
+dual edge: -1 -1
+dual edge: -1 -1
+hinge edge: 14 16
+hinge edge: 13 4
+hinge edge: 14 13
+hinge edge: 19 14
+hinge edge: 13 2
+hinge edge: 19 18
+hinge edge: 7 10
+hinge edge: 10 18
+hinge edge: 17 18
+hinge edge: 10 9
+hinge edge: 9 3
+hinge edge: 1 17
+hinge edge: 9 5
+hinge edge: 6 5
+hinge edge: 12 6
+hinge edge: 11 12
+hinge edge: 12 21
+hinge edge: 15 20
+hinge edge: 20 21
+hinge edge: 21 0
+hinge edge: 20 8
+Number of overlaps at the end of tabu Unfolder:0
+./data/meshes/science-ball-mask-023.off
+./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023.sheet
+./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023-sheet.off
+./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023-unfold.svg
+Glue tabs: 0 placed, 1 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+Maximum pair : 7 10 Maximum scaling size : 0.444287 Minimum scaling size : 0.209836
+Using half hinges
+total Half hinge edges: 21
+
+total hinge edges: 21
+
+Done saving sheet file
+END	unfolder	./data/results/unfold//science-ball-mask-023_unfold/default-unfold.cfg ./data/meshes/science-ball-mask-023.off ./data/results/unfold//science-ball-mask-023_unfold/science-ball-mask-023.sheet

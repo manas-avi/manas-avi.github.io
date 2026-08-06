@@ -358,6 +358,9 @@ const foldLedsBtn      = document.getElementById('fold-leds-btn');
 const foldHingesBtn    = document.getElementById('fold-hinges-btn');
 const foldChainBtn     = document.getElementById('fold-chain-btn');
 const foldEffectSel    = document.getElementById('fold-effect');
+const foldTextInput    = document.getElementById('fold-text');
+const foldTextRow      = document.getElementById('fold-text-row');
+const foldTextSize     = document.getElementById('fold-text-size');
 const foldDomainBtn    = document.getElementById('fold-domain-btn');
 const foldBrightness   = document.getElementById('fold-brightness');
 const foldSpeed        = document.getElementById('fold-speed');
@@ -741,9 +744,9 @@ function startFoldRenderLoop() {
   foldLastTime = performance.now();
   (function loop(now = performance.now()) {
     foldRafId = requestAnimationFrame(loop);
-    const dt = Math.min(0.05, (now - foldLastTime) / 1000);
+    let dt = Math.min(0.1, (now - foldLastTime) / 1000);
     foldLastTime = now;
-    if (foldAnimating) advanceFold(dt);
+    if (foldAnimating) advanceFold(dt*2);
     advanceSpin(dt);
     advanceEffect(dt);
     foldControls.update();
@@ -1261,6 +1264,11 @@ function buildFoldModel(off, sheet, led, mapOrder) {
     },
     ledCount, chainCount: chainFace.length / 2, chaseOrder, chainIsWiring,
     ledGraphEdges: led ? led.chain.length : 0,
+    // The .led "e" records themselves, kept (not just counted) because the surface
+    // shaders walk them: this is the adjacency the orderer solved over, and hop
+    // distance along it is what render-layout's propagation pattern is a function of.
+    ledEdges: (led ? led.chain : []).filter(
+      ([i, j]) => i >= 0 && j >= 0 && i < ledCount && j < ledCount),
     // Which un-offset triangle the .led file turned out to be written against, and
     // how uniform the recovered footprints are. Read back by foldDebug.ledFit().
     ledMap, ledSpread,
@@ -1392,8 +1400,13 @@ const MAX_STEPS_PER_FRAME = 4; // keeps a stalled tab from spinning the driver
 
 let stripRGB   = null;         // Uint8Array(n * 3), the pixel buffer
 let stripOrder = null;         // Int32Array(n), strip slot -> LED index
+let stripSlotOf = null;        // Int32Array(n), LED index -> strip slot (the inverse)
 let stripFreq  = 1;            // SPATIAL_REF / n
-let stripDomain = 'wiring';    // 'wiring' (.map order) or 'spatial' (by height)
+// 'spatial' (by height) or 'wiring' (.map order). Spatial by default: it is the one
+// that matches what is on screen, so an effect sweeps up the object the way it looks
+// like it should. Wiring order is the diagnostic — it follows the LED chain, which is
+// a property of the board, not of the shape.
+let stripDomain = 'spatial';
 let effectId   = 'rainbow';
 let effectAcc  = 0;            // ms accumulated toward the next step
 let effectState = {};          // per-effect scratch, (re)built by reset()
@@ -1503,6 +1516,12 @@ function rebuildStripOrder() {
     // Any LED the .map did not mention still needs a slot, or it could never light.
     for (let i = 0; i < n; i++) if (!seen[i]) stripOrder[w++] = i;
   }
+
+  // The inverse permutation. The strip patterns are functions of slot and never need
+  // it, but the surface shaders are functions of the LED's place in space and have to
+  // write back into the slot that drives it — so both directions have to exist.
+  if (!stripSlotOf || stripSlotOf.length !== n) stripSlotOf = new Int32Array(n);
+  for (let k = 0; k < n; k++) stripSlotOf[stripOrder[k]] = k;
 }
 
 // ── Per-LED scene illumination ────────────────────────────────────────────────
@@ -2167,6 +2186,659 @@ function uploadStrip() {
   colors.needsUpdate = true;
 }
 
+// ── LED surface context ───────────────────────────────────────────────────────
+//
+// Everything a *spatial* pattern needs, in one place: where each LED sits on the
+// folded shell, which way it faces, who its neighbours are, how far around the shell
+// it is from the start of the chain.
+//
+// This is exactly what the strip patterns above lack. They are functions of a slot
+// index and know nothing about the object. The patterns below are ported from the
+// Lua shaders in render-layout/shaders, where each one is a function of position,
+// normal and surface adjacency — a fire that climbs the real shell rather than the
+// strip, a light that sweeps across real normals, drops that spread to real
+// neighbours. Reproducing them needs the same context their host set up.
+//
+// FRAME. Those shaders were written against meshes whose own up is +Z: they read
+// height as pos.z and azimuth as atan2(x, y), and they assume the object is centred
+// on the origin (`center = Vec3(0,0,0)`). This viewer works in a Y-up world and does
+// not centre its models. So the context is built in a SHADER FRAME — the oriented
+// object rotated to put its up on +Z and translated to put its centre at the origin.
+// The turntable spin is excluded for the same reason the marquee excludes it: these
+// patterns live on the shell and have to turn with it, not stay pinned to the camera.
+
+const GRAPH_TARGET = 48;   // computeLedClosests' neighbour cap, and its search target
+const GRAPH_MIN    = 6;    // ...and a floor it never needed; see buildLedGraph
+
+const _sfPos   = new THREE.Vector3();
+const _sfPivot = new THREE.Vector3();
+const _sfOri   = new THREE.Matrix4();
+const _sfMat   = new THREE.Matrix4();
+const _sfTmp   = new THREE.Matrix4();
+// World (Y up) -> shader frame (Z up): a +90 degree turn about X, (x,y,z) -> (x,-z,y).
+const _sfFlip  = new THREE.Matrix4().makeRotationX(Math.PI / 2);
+
+let ledCtx = null;
+
+// Rebuilt every step. The geometry part is O(n) and has to be, because folding and
+// reorientation both move it; the adjacency graph underneath is built once per model
+// and cached, because it is O(n²) and only the topology decides it.
+function ledContext(n) {
+  let c = ledCtx;
+  if (!c || c.n !== n) {
+    c = ledCtx = {
+      n,
+      pos: new Float32Array(n * 3),      // shader frame, centred on the object
+      nrm: new Float32Array(n * 3),      // outward emitter normal, shader frame
+      boxMin: new Float32Array(3),
+      boxMax: new Float32Array(3),
+      ext: 1,                            // largest bbox extent, the graph's length unit
+      tri: new Int32Array(n),            // face this LED rides ("tri" in the shaders)
+      mapi: new Int32Array(n),           // place in the addressable chain, -1 if unwired
+      graph: null,                       // CSR neighbourhood with weights
+      dist: null,                        // hop distance from LED 0 along the .led graph
+      builtFor: null, builtFolded: false,
+    };
+  }
+
+  const p = _sfPivot.copy(foldPivot());
+  orientMatrix(_sfOri);
+  _sfMat.copy(_sfFlip)
+    .multiply(_sfOri)
+    .multiply(_sfTmp.makeTranslation(-p.x, -p.y, -p.z));
+
+  const T = foldModel.transforms, pos = c.pos, nrm = c.nrm;
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity;
+  let x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (let i = 0; i < n; i++) {
+    const fid = foldModel.ledFaceOf[i];
+    const T4 = T[fid];
+    _sfPos.copy(foldModel.ledCentreLocal[i]).applyMatrix4(T4).applyMatrix4(_sfMat);
+    const o = i * 3;
+    pos[o] = _sfPos.x; pos[o + 1] = _sfPos.y; pos[o + 2] = _sfPos.z;
+    if (_sfPos.x < x0) x0 = _sfPos.x;  if (_sfPos.x > x1) x1 = _sfPos.x;
+    if (_sfPos.y < y0) y0 = _sfPos.y;  if (_sfPos.y > y1) y1 = _sfPos.y;
+    if (_sfPos.z < z0) z0 = _sfPos.z;  if (_sfPos.z > z1) z1 = _sfPos.z;
+
+    // Column 2 of the face transform is the outward face normal — the same identity
+    // updateLedLights() uses, so no per-LED normal has to be stored anywhere.
+    const e = T4.elements;
+    _sfPos.set(e[8], e[9], e[10]).transformDirection(_sfMat);
+    nrm[o] = _sfPos.x; nrm[o + 1] = _sfPos.y; nrm[o + 2] = _sfPos.z;
+    c.tri[i] = fid;
+  }
+  c.boxMin[0] = x0; c.boxMin[1] = y0; c.boxMin[2] = z0;
+  c.boxMax[0] = x1; c.boxMax[1] = y1; c.boxMax[2] = z1;
+  c.ext = Math.max(x1 - x0, y1 - y0, z1 - z0) || 1;
+
+  c.mapi.fill(-1);
+  const order = foldModel.chaseOrder;
+  for (let k = 0; k < order.length; k++) {
+    const i = order[k];
+    if (i >= 0 && i < n) c.mapi[i] = k;
+  }
+
+  // The graph is built from the positions above, so a graph built mid-fold describes
+  // a half-open shell — neighbours across a seam that has not closed yet are missing,
+  // and it would stay that way for the rest of the session. Rebuild once the fold
+  // completes. Not on every fold step: this is the O(n²) part.
+  const folded = ledsLit();
+  if (c.builtFor !== foldModel || (folded && !c.builtFolded)) {
+    buildLedGraph(c);
+    c.builtFolded = folded;
+  }
+  return c;
+}
+
+// computeLedClosests(), ported: every LED within a normalised radius of another is a
+// neighbour, weighted (th - d)/th so an LED weighs 1 against itself and 0 at the rim.
+// The radius shrinks by 1.5 until no LED has more than GRAPH_TARGET neighbours, which
+// is what keeps the per-step diffusion bounded on a dense model — without it the cat's
+// 494 LEDs would put ~250 neighbours on every one of them and the diffusion, run every
+// step, would go quadratic.
+function buildLedGraph(c) {
+  const n = c.n, pos = c.pos, ex = c.ext;
+  const counts = new Int32Array(n);
+
+  const countAt = th => {
+    const th2 = (th * ex) * (th * ex);
+    counts.fill(0);
+    let maxNum = 0;
+    for (let i = 0; i < n; i++) {
+      let cnt = 0;
+      for (let j = 0; j < n; j++) {
+        const dx = pos[i * 3] - pos[j * 3];
+        const dy = pos[i * 3 + 1] - pos[j * 3 + 1];
+        const dz = pos[i * 3 + 2] - pos[j * 3 + 2];
+        if (dx * dx + dy * dy + dz * dz < th2) cnt++;
+      }
+      counts[i] = cnt;
+      if (cnt > maxNum) maxNum = cnt;
+    }
+    return maxNum;
+  };
+
+  // The reference only ever shrinks the radius, because its meshes always carried
+  // enough LEDs that 0.2 caught plenty. The assets here run from 76 LEDs to 494, and
+  // at 76 a 0.2 radius catches nothing but the LED itself — every neighbourhood is a
+  // singleton, so diffusion has nowhere to go and drops/pods/comet sit dead on the
+  // shell. Hence the search runs both ways. It commits to a direction on the first
+  // measurement so a model near the boundary cannot oscillate.
+  let th = 0.2, dir = 0;
+  for (let guard = 0; guard < 24; guard++) {
+    const maxNum = countAt(th);
+    const tooMany = maxNum > GRAPH_TARGET, tooFew = maxNum < GRAPH_MIN;
+    if (dir === 0) dir = tooMany ? -1 : tooFew ? 1 : 2;
+    if (dir < 0 && tooMany && th > 0.02) { th /= 1.5; continue; }
+    if (dir > 0 && tooFew && th < 0.5)   { th *= 1.5; continue; }
+    break;
+  }
+  countAt(th);                                    // counts[] must match the final th
+
+  const start = new Int32Array(n + 1);
+  for (let i = 0; i < n; i++) start[i + 1] = start[i] + counts[i];
+  const idx = new Int32Array(start[n]);
+  const w   = new Float32Array(start[n]);
+  const th2 = (th * ex) * (th * ex);
+  for (let i = 0; i < n; i++) {
+    let k = start[i];
+    for (let j = 0; j < n; j++) {
+      const dx = pos[i * 3] - pos[j * 3];
+      const dy = pos[i * 3 + 1] - pos[j * 3 + 1];
+      const dz = pos[i * 3 + 2] - pos[j * 3 + 2];
+      const d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 < th2) {
+        idx[k] = j;
+        w[k] = (th - Math.sqrt(d2) / ex) / th;
+        k++;
+      }
+    }
+  }
+  c.graph = { start, idx, w, th };
+
+  c.dist = ledHopDistances(c);
+  c.builtFor = foldModel;
+}
+
+// computeLedDistances(), ported: hop count from LED 0 along the .led neighbour graph.
+// Falls back to the geometric neighbourhood when a model shipped no edge records, so
+// the propagation pattern still has a field to run over rather than going blank.
+function ledHopDistances(c) {
+  const n = c.n;
+  const dist = new Int32Array(n).fill(-1);
+  const edges = foldModel.ledEdges || [];
+
+  let start, idx;
+  if (edges.length) {
+    const deg = new Int32Array(n);
+    for (const [i, j] of edges) { deg[i]++; deg[j]++; }
+    start = new Int32Array(n + 1);
+    for (let i = 0; i < n; i++) start[i + 1] = start[i] + deg[i];
+    idx = new Int32Array(start[n]);
+    const fill = start.slice(0, n);
+    for (const [i, j] of edges) { idx[fill[i]++] = j; idx[fill[j]++] = i; }
+  } else {
+    start = c.graph.start; idx = c.graph.idx;
+  }
+
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0, far = 0;
+  dist[0] = 0; queue[tail++] = 0;
+  while (head < tail) {
+    const i = queue[head++];
+    for (let k = start[i]; k < start[i + 1]; k++) {
+      const j = idx[k];
+      if (dist[j] < 0) { dist[j] = dist[i] + 1; far = dist[j]; queue[tail++] = j; }
+    }
+  }
+  // A disconnected LED would otherwise read as -1 and land at the wrong end of every
+  // wave. Park it past the far edge instead, where "not reached" actually looks right.
+  for (let i = 0; i < n; i++) if (dist[i] < 0) dist[i] = far + 1;
+  return dist;
+}
+
+// The weighted neighbourhood mean the Lua patterns diffuse with, then a decay.
+function diffuseField(c, field, out, decay) {
+  const { start, idx, w } = c.graph;
+  for (let i = 0; i < c.n; i++) {
+    let avg = 0, sw = 0;
+    for (let k = start[i]; k < start[i + 1]; k++) { avg += field[idx[k]] * w[k]; sw += w[k]; }
+    out[i] = (sw > 0 ? avg / sw : 0) * decay;
+  }
+}
+
+// render-layout's own integer scrambler. JS bitwise operators are 32-bit signed, the
+// same width Lua 5.3 integers were truncated to here, so this reproduces its sequence
+// exactly — which is what keeps these patterns deterministic frame to frame.
+const rngStep = (r, salt) => ((((r << 5) ^ 6927) + ((r >> 5) ^ salt)) | 0);
+const rngMod  = (r, m) => (((r % m) + m) % m);
+
+// tic-80's 32-entry ember ramp, shared by drops/pods/comet/fire over there. Entries
+// run 0x01..0x3f, and the originals push them through remap(c) = 31·(c/31)² before
+// handing the result to a float framebuffer. This strip is 8-bit, so the same curve is
+// baked in and rescaled to fill 0..255 at the top of the ramp.
+const EMBER_PAL = new Uint8Array([
+  0x01, 0x01, 0x01,  0x07, 0x01, 0x01,  0x0b, 0x03, 0x01,  0x11, 0x03, 0x01,
+  0x15, 0x05, 0x01,  0x19, 0x07, 0x01,  0x1d, 0x07, 0x01,  0x27, 0x0b, 0x01,
+  0x2b, 0x0f, 0x01,  0x2f, 0x11, 0x01,  0x31, 0x11, 0x01,  0x37, 0x15, 0x01,
+  0x37, 0x15, 0x01,  0x35, 0x17, 0x01,  0x35, 0x17, 0x01,  0x35, 0x19, 0x03,
+  0x33, 0x1d, 0x03,  0x33, 0x1f, 0x03,  0x33, 0x21, 0x05,  0x31, 0x21, 0x05,
+  0x31, 0x25, 0x07,  0x2f, 0x27, 0x07,  0x2f, 0x27, 0x07,  0x2f, 0x29, 0x09,
+  0x2f, 0x29, 0x09,  0x2f, 0x2b, 0x0b,  0x2d, 0x2b, 0x0b,  0x2d, 0x2d, 0x0b,
+  0x33, 0x33, 0x1b,  0x37, 0x37, 0x27,  0x3b, 0x3b, 0x31,  0x3f, 0x3f, 0x3f,
+]);
+const EMBER = (() => {
+  const t = new Uint8Array(EMBER_PAL.length);
+  const peak = 31 * Math.pow(0x3f / 31, 2);          // the ramp's own maximum, ~128
+  for (let i = 0; i < t.length; i++) {
+    const f = EMBER_PAL[i] / 31;
+    t[i] = Math.min(255, Math.round((31 * f * f) * (255 / peak)));
+  }
+  return t;
+})();
+
+// ── Scrolling text ────────────────────────────────────────────────────────────
+//
+// A sentence painted onto the shell itself, the way render-layout/shaders/text.lua
+// paints one: every LED takes a cylindrical coordinate on the object — azimuth about
+// its up axis, height along it — and reads one cell out of a bitmap font, so the words
+// wrap around the shape and turn, a stream of them passing any given face.
+//
+// The glyphs are tic-80's 5x6 font, straight from shaders/font.lua, for the reason
+// text.lua used it: a shell resolves maybe a dozen LEDs around its circumference, and
+// at that resolution a bitmap font designed for it beats a rendered typeface, which
+// only turns into blur. Letters advance by FONT_ADVANCE so the two spare columns are
+// the inter-letter gap — the same layout text.lua reads with its fj = fl * 7.0.
+//
+// One thing here is deliberately NOT the reference's. text.lua lets u run free and
+// takes it modulo the font, which tears at the wrap-around: a closed loop can only
+// display its own circumference, so mapping a longer tape onto it puts two unrelated
+// columns side by side at one fixed angle. Here the whole message plus a separating
+// gap is fitted into exactly `cols` columns, one revolution wide, which makes the
+// scroll a pure rotation of the bitmap — seamless forever, and no jump where the
+// message repeats. The price is that a longer sentence gets finer columns.
+
+const FONT_W       = 5;    // glyph columns
+const FONT_H       = 6;    // glyph rows; also the marquee's vertical resolution
+const FONT_ADVANCE = 7;    // columns per character cell, so 2 columns of letter gap
+const FONT_FIRST   = 32;   // the table starts at space
+
+// tic-80 font, via render-layout/shaders/font.lua. One word per glyph; bit (row*5+col)
+// is set when that cell is on, row 0 at the top, col 0 at the left.
+const FONT = new Int32Array([
+  0, 6297798, 330, 11512810, 16398526, 17895697, 23386274, 68,                    //   .. '
+  4261956, 2232450, 4897444, 145536, 71499776, 14336, 6488064, 1118480,           // ( .. /
+  15322734, 31863244, 32619279, 15512351, 9416140, 16530559, 15318126, 3355423,   // 0 .. 7
+  15317614, 15235694, 6488262, 71499974, 8521864, 459200, 2236546, 12595998,      // 8 .. ?
+  14743214, 20958830, 16367215, 15306350, 16371311, 32619647, 3259519, 32107646,  // @ .. G
+  20577907, 31863198, 15590175, 20290931, 32607331, 18546555, 20840179, 15322734, // H .. O
+  3657327, 552193646, 20434543, 16660734, 12988830, 15322739, 4673139, 29359793,  // P .. W
+  20560499, 13007574, 32610719, 6359110, 17043521, 6426758, 17732, 31457280,      // X .. _
+  130, 32303040, 16371171, 31694784, 32303064, 14937536, 6520028, 495969728,      // ` .. g
+  20565475, 31864844, 496787480, 20561507, 29563078, 22740320, 20565472, 15322560,// h .. o
+  117034464, 837609408, 3263968, 16654272, 29563878, 32302880, 7720544, 29349408, // p .. w
+  28785504, 495937312, 32715744, 12720268, 4329604, 6434950, 10880,               // x .. ~
+]);
+
+const TEXT_GAP_CHARS = 3;     // blank character cells between the message and its repeat
+const TEXT_SPACE_CELLS = 8;   // character cells a space is worth; see buildTextTape
+const TEXT_SCROLL    = 1;     // tape columns per step
+const TEXT_FLOOR     = 40;    // below this coverage the cell is off, not merely dim
+const TEXT_SAT       = 232;
+const TEXT_HUE_STEP  = 0.17;  // hue advance per word, in turns
+const TEXT_BLUR_FRAC = 0.6;   // of the LED angular spacing; < 1 keeps some crispness
+// text.lua returns green for an in-band cell the glyph does not cover, which turns the
+// band into a visible screen the letters travel across rather than a few loose dots.
+// Dim, or it drowns the glyphs on a shell this coarse.
+const TEXT_BG        = [0, 22, 6];
+// The azimuth runs the wrong way for a reader standing OUTSIDE the shell. text.lua's
+// atan(pos.x, pos.y) increases clockwise seen from above, so laying the tape along it
+// puts the letters — and their strokes — back to front for anyone looking at the
+// object from the outside, which is the only place anyone looks at it from. One flip
+// fixes both, because mirroring the tape mirrors the glyphs with it.
+const TEXT_MIRROR    = true;
+
+const DEFAULT_MESSAGE = 'HELLO WORLD';
+
+let textMessage   = DEFAULT_MESSAGE;
+let textTape      = null;       // { cols, rows, lum, hue, blur, blurW }
+let textUV        = null;       // Float32Array(2n): azimuth then height, per LED index
+let textFootprint = 1 / 12;     // LED angular spacing, in revolutions
+let textScale     = 1;          // glyph size multiplier, from the Text size slider
+let textRadius    = 1;          // mean LED distance from the up axis, world units
+let textHeight    = 1;          // the object's extent along that axis, world units
+
+const wrapi = (i, m) => ((i % m) + m) % m;
+
+// ── Glyph size ────────────────────────────────────────────────────────────────
+//
+// The slider sets ONE thing — how many character cells occupy a revolution — and the
+// height follows from it, so a glyph keeps its shape at every size.
+//
+// HORIZONTALLY, the wrap-around constrains the count. The shell shows exactly
+// `lapCells` cells at a time, and the two sides of the seam show source columns
+// `lapCols` apart, so the picture is continuous all the way round only when the lap
+// holds a whole number of copies of the message.
+//
+//   * SMALLER than 1x asks for more cells per lap than the message has, which is
+//     exactly the case where whole copies fit. The count snaps to a multiple, and the
+//     message repeats round the object with no seam at all — the 1x default included.
+//   * BIGGER than 1x asks for fewer cells than the message has, so the object can only
+//     show a window of it and the rest has to stream through. That has a discontinuity
+//     at one fixed angle, and there is no way around it: a closed loop cannot display
+//     more than its own circumference. It reads as the place where new words appear.
+//
+// VERTICALLY, the band is derived rather than chosen, because the two axes are in
+// different units — a column is a fraction of the circumference, a row a fraction of
+// the object's height — and left independent they disagree by whatever the object's
+// proportions happen to be. Setting the band from the slider directly made the cat's
+// letters about three times taller than they were wide. Equating the two:
+//
+//   one column, in world units = 2*PI*textRadius / lapCols
+//   one row,    in world units = bandSpan * textHeight / FONT_H
+//
+// and solving for bandSpan gives a square cell, hence glyphs with the proportions the
+// font was drawn with. A squat object runs out of height first and clamps, which is
+// the one case the letters still end up wider than tall — there is nowhere else to go.
+const TEXT_BAND_MAX = 0.92;   // never the last few percent: azimuth degenerates at the
+                              // caps, where every column lands on the same few LEDs
+const TEXT_BAND_MIN = 0.04;
+
+function textBand(lapCols) {
+  const colW = (2 * Math.PI * textRadius) / lapCols;
+  const span = Math.min(TEXT_BAND_MAX,
+                        Math.max(TEXT_BAND_MIN, (colW * FONT_H) / textHeight));
+  return { lo: 0.5 - span / 2, hi: 0.5 + span / 2 };
+}
+
+// Now that height follows width, one default size cannot serve every model: a square
+// cell at 1x is 6% of the standing cat's height, half an LED wide, and invisible, while
+// the bridge is legible at 1x and clipped by 2x. The assets run from 76 to 660 LEDs and
+// from radius/height 0.2 to 2, so the opening size is fitted to the object instead —
+// scaled until a cell is about TEXT_TARGET_LEDS LEDs across, which is the point where a
+// 5-wide glyph starts resolving. Touching the slider hands control back for good.
+const TEXT_TARGET_LEDS = 6;
+let textScaleAuto = true;
+
+// Iterated rather than solved: the footprint depends on the band, the band on the lap
+// width, and the lap width on the scale being chosen. Three passes is plenty — each one
+// re-measures against the size the last one picked, and they converge immediately.
+function fitTextScale(c) {
+  if (!textScaleAuto || !textTape || !c?.n) return;
+  const cells = textTape.cols / FONT_ADVANCE;
+  for (let k = 0; k < 3; k++) {
+    rebuildTextUV(c);
+    const wantCells = Math.max(2, Math.round(1 / (textFootprint * TEXT_TARGET_LEDS)));
+    textScale = Math.min(4, Math.max(0.5, cells / wantCells));
+  }
+  if (foldTextSize) foldTextSize.value = Math.round(Math.min(400, textScale * 100));
+}
+
+// Columns of the message that span one revolution of the shell.
+function textLapCols() {
+  const src = textTape.cols;
+  const cells = src / FONT_ADVANCE;
+  let lap = Math.max(2, Math.round(cells / textScale));
+  if (lap > cells) lap = cells * Math.max(1, Math.round(lap / cells));   // whole copies
+  return lap * FONT_ADVANCE;
+}
+
+// Lay the message out as a column tape, one FONT_ADVANCE-wide cell per character —
+// except a space, which is TEXT_SPACE_CELLS of them.
+//
+// A space would otherwise be one cell like any other, leaving 9 blank columns between
+// words against 2 between letters. That reads fine on a screen and not at all here: by
+// the time a cell is a couple of LEDs wide, a 9-column gap and a 2-column gap are the
+// same gap, and the sentence arrives as one unbroken run of blobs. Widening only the
+// spaces buys the separation back where it carries the most meaning. It costs a little
+// glyph size, because the whole message still has to fit its lap.
+const cellsOf = ch => (ch === ' ' ? TEXT_SPACE_CELLS : 1);
+
+function buildTextTape() {
+  const msg = String(textMessage || '').replace(/\s+/g, ' ').trim();
+  if (!msg) { textTape = null; return; }
+
+  const chars = Array.from(msg);
+  let cells = TEXT_GAP_CHARS;
+  for (const ch of chars) cells += cellsOf(ch);
+
+  const cols = cells * FONT_ADVANCE;
+  const rows = FONT_H;
+  const lum = new Uint8Array(cols * rows);
+  const hue = new Int32Array(cols);
+
+  // One hue per word. Word boundaries then survive a resolution the letterforms
+  // themselves may not: even when the glyphs read as blobs, the words are countable.
+  let word = 0, atGap = true, pen = 0;
+  for (let ci = 0; ci < chars.length; ci++) {
+    const ch = chars[ci];
+    if (ch === ' ') atGap = true;
+    else { if (atGap) word++; atGap = false; }
+
+    const h = Math.round((Math.max(0, word - 1) * TEXT_HUE_STEP % 1) * 65535);
+    const c0 = pen * FONT_ADVANCE;
+    const width = cellsOf(ch) * FONT_ADVANCE;
+    for (let j = 0; j < width; j++) hue[c0 + j] = h;
+    pen += cellsOf(ch);
+
+    const k = ch.codePointAt(0) - FONT_FIRST;
+    const g = (k >= 0 && k < FONT.length) ? FONT[k] : 0;
+    if (!g) continue;
+    for (let i = 0; i < FONT_H; i++) {
+      for (let j = 0; j < FONT_W; j++) {
+        if ((g >> (i * FONT_W + j)) & 1) lum[i * cols + c0 + j] = 255;
+      }
+    }
+  }
+
+  textTape = { cols, rows, lum, hue, blur: null, blurW: 0 };
+}
+
+// Horizontal box blur of width w columns, wrapped, cached on the tape.
+//
+// This is the antialiasing the sampling needs and the bit font does not have. A shell
+// with a dozen LEDs around it reads roughly one tape column in ten, so a one-column
+// stem is either hit or missed, and as the tape turns the letters flicker. Averaging
+// over the LED's own angular footprint first is the box filter that sampling implies.
+// Wrapped rather than clamped because the tape is a loop — the message's first column
+// really is adjacent to the gap at its end.
+function textBlurred(w) {
+  const tp = textTape;
+  if (tp.blur && tp.blurW === w) return tp.blur;
+  const { cols, rows, lum } = tp;
+  const out = new Float32Array(cols * rows);
+  const h0 = w >> 1;
+  for (let r = 0; r < rows; r++) {
+    const base = r * cols;
+    let acc = 0;
+    for (let d = 0; d < w; d++) acc += lum[base + wrapi(d - h0, cols)];
+    for (let c = 0; c < cols; c++) {
+      out[base + c] = acc / w;
+      acc += lum[base + wrapi(c + w - h0, cols)] - lum[base + wrapi(c - h0, cols)];
+    }
+  }
+  tp.blur = out; tp.blurW = w;
+  return out;
+}
+
+const _textAz  = [];
+const _textGap = [];
+
+// Cylindrical coordinates for every LED, read straight off the shader context: azimuth
+// about the object's up axis, exactly text.lua's atan(pos.x, pos.y), and height as the
+// normalised pos.z, exactly its uvw.z.
+function rebuildTextUV(c) {
+  const n = c.n;
+  if (!textUV || textUV.length !== n * 2) textUV = new Float32Array(n * 2);
+  const z0 = c.boxMin[2], span = (c.boxMax[2] - c.boxMin[2]) || 1;
+  let radius = 0;
+  for (let i = 0; i < n; i++) {
+    const a = Math.atan2(c.pos[i * 3], c.pos[i * 3 + 1]) / (Math.PI * 2) + 0.5;
+    textUV[i * 2] = TEXT_MIRROR ? 1 - a : a;
+    textUV[i * 2 + 1] = (c.pos[i * 3 + 2] - z0) / span;
+    radius += Math.hypot(c.pos[i * 3], c.pos[i * 3 + 1]);
+  }
+  // The two world lengths the aspect ratio is built from. Mean radius rather than the
+  // bounding box's, because the box measures the widest ring and most of these shapes
+  // are not cylinders — the dome's LEDs sit well inside its footprint.
+  textRadius = (n ? radius / n : 1) || 1;
+  textHeight = span;
+  textFootprint = measureTextFootprint(n, FONT_H, textBand(textLapCols()));
+}
+
+// How far apart neighbouring LEDs sit around the up axis, in revolutions — the
+// display's real horizontal resolution, and so the width of the blur the tape needs.
+//
+// Measured per display ROW, which is the whole subtlety. LEDs at different heights
+// interleave in azimuth, so pooling the whole band reports a resolution the display
+// does not have: the cat's 494 LEDs come out about a degree apart that way, when any
+// single row of them is nearer ten. A glyph stroke is sampled by one row at a time, so
+// the spacing within a row is the one that decides whether the stroke survives.
+function measureTextFootprint(n, rows, band) {
+  const lo = band.lo, span = band.hi - band.lo;
+  let acc = 0, used = 0;
+  for (let r = 0; r < rows; r++) {
+    const a = lo + (r / rows) * span, b = lo + ((r + 1) / rows) * span;
+    _textAz.length = 0;
+    for (let i = 0; i < n; i++) {
+      const v = textUV[i * 2 + 1];
+      if (v >= a && v < b) _textAz.push(textUV[i * 2]);
+    }
+    if (_textAz.length < 3) continue;              // too few to say anything
+    _textAz.sort((x, y) => x - y);
+    _textGap.length = 0;
+    for (let i = 1; i < _textAz.length; i++) _textGap.push(_textAz[i] - _textAz[i - 1]);
+    _textGap.sort((x, y) => x - y);
+    acc += _textGap[_textGap.length >> 1];         // this row's median spacing
+    used++;
+  }
+  if (!used) return 1 / 8;
+  return Math.min(0.25, Math.max(1 / 512, acc / used));
+}
+
+// Bilinear read of the tape at one LED's coordinate. Wraps in x (the tape is a loop),
+// clamps in y (it is not). Returns -1 for an LED outside the text band, which is a
+// different answer from 0: outside the band the LED is dark, inside it is background.
+// `cols` is the message's own length; `lapCols` is how much of it one revolution
+// shows, which is what the size control moves.
+function textSample(lum, cols, rows, u, v, shift, lapCols, band) {
+  const b = (v - band.lo) / (band.hi - band.lo);
+  if (b < 0 || b > 1) return -1;
+  const y = (1 - b) * (rows - 1);          // tape row 0 is the top, height 0 the bottom
+  // Plus, not minus. At a fixed point on the shell the tape column has to ADVANCE with
+  // the scroll, so the message runs past a viewer in reading order — first word first.
+  // Negated, the same animation plays the sentence backwards through every face. The
+  // sign only picks the direction of travel: which way the glyphs themselves face is
+  // TEXT_MIRROR's job, and flipping this cannot undo that.
+  const x = u * lapCols + shift;
+  const x0 = Math.floor(x), y0 = Math.floor(y);
+  const fx = x - x0, fy = y - y0;
+  const xa = wrapi(x0, cols), xb = wrapi(x0 + 1, cols);
+  const ya = Math.max(0, Math.min(rows - 1, y0));
+  const yb = Math.max(0, Math.min(rows - 1, y0 + 1));
+  return (1 - fx) * ((1 - fy) * lum[ya * cols + xa] + fy * lum[yb * cols + xa])
+       +       fx * ((1 - fy) * lum[ya * cols + xb] + fy * lum[yb * cols + xb]);
+}
+
+// Repaint now rather than at the next step, so editing the message or dragging the
+// size slider is live even while the effect is crawling at the low end of the speed
+// slider — at 0.1x a step is most of a second away.
+function repaintText() {
+  if (effectId !== 'text' || !stripRGB || !foldModel) return;
+  effectById('text').step(foldModel.ledCount);
+  uploadStrip();
+}
+
+function setTextMessage(msg) {
+  textMessage = String(msg ?? '');
+  if (foldTextInput && foldTextInput.value !== textMessage) foldTextInput.value = textMessage;
+  buildTextTape();
+  // A longer message is more cells around the same object, so the auto size has to be
+  // re-fitted or every edit would quietly shrink the letters.
+  if (foldModel?.ledCount) fitTextScale(ledContext(foldModel.ledCount));
+  repaintText();
+}
+
+// Scale is a pure read of the slider — the tape is not rebuilt, because the message's
+// own columns do not change. Only how many of them a revolution covers, and how tall
+// the band is, and those are both derived per step.
+function setTextScale(scale) {
+  textScaleAuto = false;                 // an explicit size wins from here on
+  textScale = Math.min(4, Math.max(0.25, Number(scale) || 1));
+  if (foldTextSize && Number(foldTextSize.value) !== Math.round(textScale * 100)) {
+    foldTextSize.value = Math.round(textScale * 100);
+  }
+  repaintText();
+}
+
+// ── Surface shaders ───────────────────────────────────────────────────────────
+//
+// The adapter between the two worlds. A surface shader is a function of one LED's
+// place on the shell, but the effect driver only knows how to step a strip — so this
+// wraps one into the other: build the context, run the pattern's own per-frame update,
+// then shade every LED and write the result back through the slot that drives it.
+//
+// `t` stands in for the host's wall-clock `time`, in milliseconds, but accumulated from
+// the fixed timestep rather than read from a clock. That is what the driver above
+// already guarantees every other effect, and it is why a given frame number always
+// produces the same picture here.
+
+const _shade = [0, 0, 0];
+const to255 = v => (v <= 0 ? 0 : v >= 255 ? 255 : Math.round(v));
+
+function surfaceEffect(spec) {
+  return {
+    id: spec.id, label: spec.label, group: 'Surface',
+    interval: spec.interval, domain: 'spatial',
+    reset(n) {
+      const s = effectState;
+      s.frame = 0; s.t = 0; s.rng = 31421;
+      if (spec.init && foldModel && n) spec.init(ledContext(n), s);
+    },
+    step(n) {
+      if (!foldModel || !n) return;
+      const c = ledContext(n);
+      const s = effectState;
+      if (s.frame == null) { s.frame = 0; s.t = 0; s.rng = 31421; spec.init?.(c, s); }
+      s.t = s.frame * spec.interval;
+      spec.frameStart?.(c, s);
+      for (let i = 0; i < n; i++) {
+        _shade[0] = _shade[1] = _shade[2] = 0;
+        spec.shade(c, i, s, _shade);
+        sSet(stripSlotOf[i], to255(_shade[0]), to255(_shade[1]), to255(_shade[2]));
+      }
+      s.frame++;
+    },
+  };
+}
+
+// A field pattern is drops/pods/comet's shared skeleton: a scalar per LED, stirred by
+// the pattern's own frameStart, diffused over the neighbourhood, and read back through
+// the ember ramp. Only the stirring differs between the three.
+function emberField(spec) {
+  return surfaceEffect({
+    id: spec.id, label: spec.label, interval: spec.interval,
+    init(c, s) {
+      s.field = new Float32Array(c.n);
+      s.next  = new Float32Array(c.n);
+      spec.init?.(c, s);
+    },
+    frameStart(c, s) {
+      spec.stir(c, s);
+      diffuseField(c, s.field, s.next, spec.decay);
+      const swap = s.field; s.field = s.next; s.next = swap;
+    },
+    shade(_c, i, s, out) {
+      const f = Math.max(0, Math.min(31, Math.floor(s.field[i])));
+      const o = f * 3;
+      // The originals permute the channels per pattern — same ramp, different fire.
+      out[spec.ch[0]] = EMBER[o];
+      out[spec.ch[1]] = EMBER[o + 1];
+      out[spec.ch[2]] = EMBER[o + 2];
+    },
+  });
+}
+
 // ── Effects ───────────────────────────────────────────────────────────────────
 // Each entry keeps the sketch's per-step body and is driven at a fixed timestep
 // (`interval` ms, from the pattern's own delay()/wait), which is what preserves
@@ -2372,6 +3044,343 @@ const EFFECTS = [
     },
   },
   {
+    // The one effect that is a function of geometry rather than strip index: it reads
+    // the tape at each LED's own place on the shell, so the same message wraps a cat
+    // and a bridge correctly, and 'Domain: Spatial' makes no difference to it.
+    // Deliberately slow: the words have to be readable as they pass, and one step is
+    // one tape column, so this is ~8s for a short message to come all the way round.
+    // The Effect speed slider still scales it for anyone who wants it brisk.
+    // `domain: 'spatial'` is honoured by setEffect — see applyEffectDomain.
+    id: 'text', label: 'Word stream (message)', group: 'Text', interval: 70,
+    domain: 'spatial',
+    reset(n) {
+      effectState.shift = 0;
+      buildTextTape();
+      // Both entry points land here — selecting the effect and loading a model — which
+      // is exactly when the object under the message may have changed shape.
+      if (foldModel && n) fitTextScale(ledContext(n));
+    },
+    step(n) {
+      sClear();
+      if (!textTape || !foldModel || !n) return;
+      const s = effectState;
+      const ctx = ledContext(n);
+      rebuildTextUV(ctx);
+      const tp = textTape;
+      const lapCols = textLapCols();
+      const band = textBand(lapCols);
+      // An LED's angular footprint is a fraction of a revolution, and a revolution is
+      // lapCols columns — so the blur widens as the glyphs shrink, which is exactly
+      // when the strokes start falling between LEDs.
+      const lum = textBlurred(Math.max(1, Math.round(TEXT_BLUR_FRAC * textFootprint * lapCols)));
+      if (s.shift >= tp.cols) s.shift = 0;         // the message was edited mid-scroll
+
+      for (let i = 0; i < n; i++) {
+        const u = textUV[i * 2], v = textUV[i * 2 + 1];
+        const l = textSample(lum, tp.cols, tp.rows, u, v, s.shift, lapCols, band);
+        if (l < 0) continue;                       // above or below the band: dark
+        const k = stripSlotOf[i];
+        if (l < TEXT_FLOOR) { sSet(k, TEXT_BG[0], TEXT_BG[1], TEXT_BG[2]); continue; }
+        const hx = wrapi(Math.round(u * lapCols + s.shift), tp.cols);
+        const c = hsv(tp.hue[hx], TEXT_SAT, Math.min(255, Math.round(l)));
+        sSet(k, c[0], c[1], c[2]);
+      }
+      s.shift = wrapi(s.shift + TEXT_SCROLL, tp.cols);
+    },
+  },
+
+  // ── Ported from render-layout/shaders ───────────────────────────────────────
+  // Each of these is one Lua shader from that repo, kept recognisable: same field
+  // updates, same constants, same look. What changes is only what has to — HDR returns
+  // rescaled to the 8-bit strip, wall-clock time replaced by the fixed timestep, and
+  // the few hard-coded mesh dimensions expressed as fractions of this model's extent.
+
+  surfaceEffect({
+    // phong.lua. A tight specular highlight travelling over the real face normals,
+    // its light direction turning about the up axis and then tipping over.
+    id: 'phong', label: 'Phong sweep', interval: 30,
+    shade(c, i, s, out) {
+      const t = s.t * 0.01;
+      let lx = 1, ly = -1, lz = 2;
+      const inv = 1 / Math.sqrt(lx * lx + ly * ly + lz * lz);
+      lx *= inv; ly *= inv; lz *= inv;
+      const a = 0.04 * Math.PI * t;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      let nx = ca * lx + sa * ly, ny = -sa * lx + ca * ly, nz = lz;
+      if (t > 50) {                                 // the original's second axis, later
+        const a2 = 0.025 * Math.PI * (t - 50);
+        const c2 = Math.cos(a2), s2 = Math.sin(a2);
+        const x = c2 * nx + s2 * nz;
+        nz = -s2 * nx + c2 * nz;
+        nx = x;
+      }
+      const o = i * 3;
+      let k = c.nrm[o] * nx + c.nrm[o + 1] * ny + c.nrm[o + 2] * nz;
+      k = k > 0 ? Math.pow(k, 24) : 0;              // ^24: a spot, not a wash
+      out[0] = (0.002 * (1 - k) + 0.5 * k) * 256;
+      out[1] = (0.002 * (1 - k) + 0.5 * k) * 256;
+      out[2] = (0.001 * (1 - k) + 1.0 * k) * 256;
+    },
+  }),
+
+  surfaceEffect({
+    // angle.lua. Three coloured beams sweeping around the up axis at 1/20, 1/8 and
+    // 1/4 turn per frame — they slide past each other and only rarely line up.
+    id: 'beams', label: 'Rotating beams', interval: 28,
+    shade(c, i, s, out) {
+      const o = i * 3;
+      const dx = c.pos[o], dy = c.pos[o + 1];
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const LIM = 0.1;
+      const beam = (a, r, g, b) => {
+        const cosa = ux * Math.cos(a) + uy * Math.sin(a);
+        if (cosa <= 1 - LIM) return;
+        const k = (cosa - 1 + LIM) / LIM;
+        out[0] += r * k * k * 255; out[1] += g * k * k * 255; out[2] += b * k * k * 255;
+      };
+      beam(s.frame / 20, 1, 0, 0);
+      beam(-s.frame / 8, 0, 0, 1);
+      beam(s.frame / 4, 0, 1, 0);
+    },
+  }),
+
+  surfaceEffect({
+    // rainbow.lua's rainbow_angle: the hue wheel laid on the object's azimuth, turning.
+    // Its 6-segment ramp is kept rather than routed through hsv() — the segment ends
+    // are what give it the flat primaries the original shows.
+    id: 'wheel', label: 'Rainbow wheel', interval: 26,
+    shade(c, i, s, out) {
+      const o = i * 3;
+      const len = Math.hypot(c.pos[o], c.pos[o + 1]) || 1;
+      const dx = c.pos[o] / len, dy = c.pos[o + 1] / len;
+      const a = s.t / 400;
+      const lxx = Math.cos(a), lyy = Math.sin(a);
+      let deg = 180 * Math.acos(Math.max(-1, Math.min(1, dx * lxx + dy * lyy))) / Math.PI;
+      if (dx * lyy - dy * lxx < 0) deg = 360 - deg;    // cross product's z picks the side
+      const R = 4.25;
+      if (deg < 60)       { out[0] = 255; out[1] = deg * R; out[2] = 0; }
+      else if (deg < 120) { out[0] = (120 - deg) * R; out[1] = 255; out[2] = 0; }
+      else if (deg < 180) { out[0] = 0; out[1] = 255; out[2] = (deg - 120) * R; }
+      else if (deg < 240) { out[0] = 0; out[1] = (240 - deg) * R; out[2] = 255; }
+      else if (deg < 300) { out[0] = (deg - 240) * R; out[1] = 0; out[2] = 255; }
+      else                { out[0] = 255; out[1] = 0; out[2] = (360 - deg) * R; }
+    },
+  }),
+
+  surfaceEffect({
+    // cosine.lua. Three sine waves along x, y and z at different rates, one per
+    // channel — the cheapest possible proof that the pattern really is spatial.
+    id: 'cosine', label: 'Cosine field', interval: 26,
+    shade(c, i, s, out) {
+      const o = i * 3;
+      out[0] = (0.5 + 0.5 * Math.sin(s.t / 100 + 0.1 * c.pos[o])) * 255;
+      out[1] = (0.5 + 0.5 * Math.cos(s.t / 300 + 0.1 * c.pos[o + 1])) * 255;
+      out[2] = (0.5 + 0.5 * Math.cos(0.375897 + s.t / 500 + 0.1 * c.pos[o + 2])) * 255;
+    },
+  }),
+
+  surfaceEffect({
+    // box.lua. Position within the bounding box, straight out as RGB. Static, and the
+    // fastest way to see which way round a model actually ended up.
+    id: 'gradient', label: 'Box gradient', interval: 200,
+    shade(c, i, _s, out) {
+      for (let k = 0; k < 3; k++) {
+        const span = (c.boxMax[k] - c.boxMin[k]) || 1;
+        out[k] = ((c.pos[i * 3 + k] - c.boxMin[k]) / span) * 255;
+      }
+    },
+  }),
+
+  surfaceEffect({
+    // triangle.lua. Faces light in triangle order and then clear, which walks the
+    // unfolding's own numbering across the shell.
+    id: 'faces', label: 'Face reveal', interval: 40,
+    shade(c, i, s, out) {
+      const period = foldModel.nFaces + 12;         // a beat of darkness before it loops
+      if ((s.frame / 3) % period > c.tri[i]) { out[0] = 255; out[1] = 40; out[2] = 10; }
+    },
+  }),
+
+  surfaceEffect({
+    // shader.lua's routing(): light every LED the chain has reached so far. The strip
+    // 'chase' shows a comet travelling the same path; this shows the path being built,
+    // which is the one that reads as "this is how it is wired".
+    id: 'routing', label: 'Chain routing', interval: 40,
+    shade(c, i, s, out) {
+      const period = c.n + 20;
+      if (c.mapi[i] >= 0 && c.mapi[i] <= s.frame % period) {
+        out[0] = 255; out[1] = 30; out[2] = 30;
+      } else {
+        out[2] = 60;                                // not yet reached: cold
+      }
+    },
+  }),
+
+  surfaceEffect({
+    // propagation.lua. Colour bands expanding by hop distance along the .led graph, so
+    // the wave spreads through the wiring's own topology rather than through space.
+    id: 'propagation', label: 'Propagation', interval: 30,
+    shade(c, i, s, out) {
+      const COLS = [[1, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1],
+                    [0, 1, 1], [0, 1, 0], [1, 1, 0], [1, 0, 0]];
+      const CHANGE = 2 * Math.PI;
+      const speed = 0.2, freq = 1.0;
+      const d = c.dist[i];
+      const t = s.frame % Math.ceil((8 * CHANGE) / speed + 60);
+      const coef = 0.5 * (Math.cos(freq * d - t * speed) + 1);
+      const reach = t * speed - freq * d;
+      let col = null;
+      for (let k = 7; k >= 0; k--) if (reach > k * CHANGE) { col = COLS[k]; break; }
+      if (!col || reach > 8 * CHANGE) return;
+      for (let k = 0; k < 3; k++) out[k] = (0.04 * coef + col[k] * (1 - coef)) * 255;
+    },
+  }),
+
+  surfaceEffect({
+    // snake.lua. A walk over the neighbourhood graph that always steps to its nearest
+    // unvisited neighbour, leaving a trail; when it paints itself into a corner it
+    // jumps elsewhere, and once the shell is full it starts again.
+    id: 'snake', label: 'Snake', interval: 40,
+    init(c, s) { s.visited = new Uint8Array(c.n); s.head = -1; s.count = 0; },
+    frameStart(c, s) {
+      const { start, idx } = c.graph;
+      if (s.head < 0 || s.count >= c.n) {
+        s.visited.fill(0); s.count = 0;
+        s.head = rngMod(s.rng, c.n);
+      } else {
+        let best = -1, bestD = Infinity;
+        for (let k = start[s.head]; k < start[s.head + 1]; k++) {
+          const j = idx[k];
+          if (j === s.head || s.visited[j]) continue;
+          const dx = c.pos[j * 3] - c.pos[s.head * 3];
+          const dy = c.pos[j * 3 + 1] - c.pos[s.head * 3 + 1];
+          const dz = c.pos[j * 3 + 2] - c.pos[s.head * 3 + 2];
+          const d = dx * dx + dy * dy + dz * dz;
+          if (d < bestD) { bestD = d; best = j; }
+        }
+        s.head = best >= 0 ? best : rngMod(s.rng, c.n);
+      }
+      if (!s.visited[s.head]) { s.visited[s.head] = 1; s.count++; }
+      s.rng = rngStep(s.rng, s.frame);
+    },
+    shade(_c, i, s, out) {
+      if (i === s.head)      { out[0] = 255; out[1] = 255; out[2] = 220; }
+      else if (s.visited[i]) { out[0] = 200; out[1] = 12; out[2] = 0; }
+      else                   { out[1] = 26; }
+    },
+  }),
+
+  emberField({
+    // drops.lua. Three heat drops per frame at random LEDs, spreading through the
+    // neighbourhood and cooling. Channel-swapped to blue, as the original returns it.
+    id: 'drops', label: 'Drops', interval: 30, decay: 0.965, ch: [2, 1, 0],
+    stir(c, s) {
+      for (let d = 0; d < 3; d++) {
+        s.field[rngMod(s.rng, c.n)] = 128;
+        s.rng = rngStep(s.rng, s.frame);
+      }
+    },
+  }),
+
+  emberField({
+    // pods.lua. Twenty agents wandering the neighbourhood graph, each painting its own
+    // neighbourhood as it goes. A short decay keeps them as moving blobs, not a wash.
+    id: 'pods', label: 'Pods', interval: 30, decay: 0.6, ch: [1, 2, 0],
+    init(c, s) {
+      s.pods = Int32Array.from({ length: Math.min(20, c.n) },
+                               (_, i) => Math.floor((i * c.n) / 20));
+    },
+    stir(c, s) {
+      const { start, idx, w } = c.graph;
+      for (let pi = 0; pi < s.pods.length; pi++) {
+        const p = s.pods[pi];
+        for (let k = start[p]; k < start[p + 1]; k++) s.field[idx[k]] += w[k] * 15;
+        const deg = start[p + 1] - start[p];
+        if (deg > 0) s.pods[pi] = idx[start[p] + rngMod(s.rng, deg)];
+        s.rng = rngStep(s.rng, pi);
+      }
+    },
+  }),
+
+  emberField({
+    // comet.lua. A head on a Lissajous path around the object — one slow circle about
+    // the up axis carrying a fast small circle — snapped to whichever LED is nearest,
+    // with the last ten positions trailing behind it. The original's 127 and 40 are
+    // that mesh's dimensions; here they are fractions of this model's extent, or the
+    // path would miss a small object entirely and swallow a large one.
+    id: 'cometPath', label: 'Comet path', interval: 26, decay: 0.8, ch: [0, 1, 2],
+    init(_c, s) { s.trail = new Int32Array(10).fill(-1); },
+    stir(c, s) {
+      const R1 = 0.50 * c.ext, R2 = 0.157 * c.ext;
+      const a = s.frame * Math.PI / 30, a2 = s.frame * Math.PI / 7;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const dx = Math.cos(a2) * R2, dy = Math.sin(a2) * R2;
+      const hx = ca * R1 + ca * dx, hy = dy, hz = sa * R1 + sa * dx;
+
+      let head = 0, dmin = Infinity;
+      for (let i = 0; i < c.n; i++) {
+        const ex = c.pos[i * 3] - hx, ey = c.pos[i * 3 + 1] - hy, ez = c.pos[i * 3 + 2] - hz;
+        const d = ex * ex + ey * ey + ez * ez;
+        if (d < dmin) { dmin = d; head = i; }
+      }
+
+      const COEF = 512, len = s.trail.length;
+      s.field[head] = COEF;
+      for (let k = 0; k < len; k++) {
+        if (s.trail[k] >= 0) s.field[s.trail[k]] = COEF - (k + 1) * COEF / (len + 1);
+      }
+      for (let k = len - 1; k > 0; k--) s.trail[k] = s.trail[k - 1];
+      s.trail[0] = head;
+    },
+  }),
+
+  surfaceEffect({
+    // fire.lua. Not the strip fire above: heat is injected into the LEDs in the bottom
+    // tenth of the object and each LED then takes it from a neighbour BELOW itself, so
+    // the flame climbs the real shell and forks around whatever the shape does.
+    id: 'surfaceFire', label: 'Surface fire', interval: 26,
+    init(c, s) { s.heat = new Float32Array(c.n); s.next = new Float32Array(c.n); },
+    frameStart(c, s) {
+      const { start, idx } = c.graph;
+      const z0 = c.boxMin[2], span = (c.boxMax[2] - c.boxMin[2]) || 1;
+      const t = s.t;
+
+      for (let i = 0; i < c.n; i++) {
+        if ((c.pos[i * 3 + 2] - z0) / span < 0.1) {
+          s.heat[i] = 10 * (1 + 0.5 * Math.cos(t * 0.01)) + (s.rng & 15)
+                    + Math.floor(32 + 32 * Math.cos(t * 0.001));
+          s.rng = rngStep(s.rng, i);
+        }
+      }
+      // One extra ember somewhere in the lower two thirds, so the flame is never
+      // perfectly regular around the base.
+      const spark = rngMod(s.rng, c.n);
+      if (c.pos[spark * 3 + 2] < z0 + span * 0.667) s.heat[spark] = 32 + (s.rng & 31);
+
+      for (let i = 0; i < c.n; i++) {
+        let val = 0;
+        const zi = c.pos[i * 3 + 2];
+        for (let k = start[i]; k < start[i + 1]; k++) {
+          const j = idx[k];
+          if (c.pos[j * 3 + 2] < zi) val = s.heat[j] * 0.97 - (s.rng & 3);
+        }
+        s.next[i] = val;
+        s.rng = rngStep(s.rng, i);
+      }
+      const swap = s.heat; s.heat = s.next; s.next = swap;
+    },
+    shade(_c, i, s, out) {
+      const v = Math.max(0, Math.min(31, s.heat[i]));
+      const o = Math.floor(v) * 3;
+      // fire.lua's own remap: 0.4·v·((c-1)/32)^1.5, so brightness rides the heat and the
+      // hue rides the ramp. Its peak is ~33, hence the rescale onto 0..255.
+      const remap = k => 0.4 * v * Math.pow(Math.max(0, (EMBER_PAL[k] - 1) / 32), 1.5) * 7.7;
+      out[0] = remap(o); out[1] = remap(o + 1); out[2] = remap(o + 2);
+    },
+  }),
+
+  {
     id: 'allon', label: 'All on (chain hue)', group: 'Static', interval: 200,
     reset() {},
     step(n) {
@@ -2393,7 +3402,7 @@ const effectById = id => EFFECTS.find(e => e.id === id) || EFFECTS[0];
 function populateEffectSelect() {
   if (!foldEffectSel) return;
   foldEffectSel.textContent = '';
-  for (const group of ['Motion', 'Simulation', 'Static']) {
+  for (const group of ['Motion', 'Simulation', 'Surface', 'Text', 'Static']) {
     const members = EFFECTS.filter(e => e.group === group);
     if (!members.length) continue;
     const og = document.createElement('optgroup');
@@ -2409,6 +3418,18 @@ function populateEffectSelect() {
   foldEffectSel.value = effectId;
 }
 populateEffectSelect();
+if (foldTextInput) foldTextInput.value = textMessage;
+if (foldTextSize) textScale = Math.max(0.25, Number(foldTextSize.value) / 100 || 1);
+
+// An effect may declare the strip domain it wants. Only the text marquee does: it is
+// a spatial pattern, so leaving the viewer in wiring order would label it as something
+// it is not, and the height-sorted order is the one that matches what is on screen.
+// Applied before the first step so the very first frame is already consistent.
+function applyEffectDomain(id) {
+  const want = effectById(id).domain;
+  if (want && stripDomain !== want) { setStripDomain(want); return true; }
+  return false;
+}
 
 function resetStrip() {
   if (!foldModel || !foldModel.ledCount) { stripRGB = null; return; }
@@ -2417,6 +3438,10 @@ function resetStrip() {
   stripFreq = SPATIAL_REF / Math.max(1, n);
   effectAcc = 0;
   effectState = {};
+  // Straight assignment, not setStripDomain: stripRGB has just been reallocated and
+  // there is nothing in it yet to reorder or upload.
+  stripDomain = effectById(effectId).domain || stripDomain;
+  refreshToggles();
   rebuildStripOrder();
   effectById(effectId).reset(n);
   effectById(effectId).step(n);      // paint one frame so nothing starts blank
@@ -2426,7 +3451,12 @@ function resetStrip() {
 function setEffect(id) {
   effectId = effectById(id).id;
   if (foldEffectSel && foldEffectSel.value !== effectId) foldEffectSel.value = effectId;
+  // The message box drives this one effect and nothing else, so it only exists while
+  // that effect is up. Toggled here rather than in the select's listener because
+  // setEffect is also how foldDebug and applyEffectDomain change effects.
+  foldTextRow?.classList.toggle('hidden', effectId !== 'text');
   if (!stripRGB || !foldModel) return;
+  applyEffectDomain(effectId);
   const n = foldModel.ledCount;
   effectAcc = 0;
   effectState = {};
@@ -3068,6 +4098,13 @@ async function setEnvironment(id) {
 const SPIN_PERIOD = 14;    // seconds per revolution
 let foldSpinning  = false;
 let foldSpinAngle = 0;
+
+// Has the user made an explicit choice about Diffuser / Spin? revealFolded() turns
+// both on when the fold sweep lands, and consults these so it can never undo a click.
+// Deliberately NOT reset per model: someone who switched the spin off once meant it,
+// and having the next shape start turning again would read as the setting not sticking.
+let diffuserUserSet = false;
+let spinUserSet     = false;
 const foldOrient  = { x: 0, y: 0, z: 0 };   // degrees
 
 // Per-model corrections, keyed by asset FAMILY (see splitVariant): the shape, not the
@@ -3179,12 +4216,35 @@ const FOLD_PERIOD = 4.5;   // seconds for one flat -> folded sweep
 // Pressing Play at 100% replays from flat.
 function advanceFold(dt) {
   foldT += dt / FOLD_PERIOD;
-  if (foldT >= 1) {
+  const landed = foldT >= 1;
+  if (landed) {
     foldT = 1;
     foldAnimating = false;
     foldPlayBtn.textContent = '▶ Play';
   }
   setFoldT(foldT);
+  // After setFoldT, not before: setSpinning re-applies the group transform, and it
+  // has to be the closed pose it re-applies, not the last frame short of it.
+  if (landed) revealFolded();
+}
+
+// The payoff at the end of the sweep: finish as a lamp rather than as a bare board.
+// The diffuser seals the LEDs behind a translucent panel per face and the spin shows
+// the result off. Both are looks, not diagnostics, which is why they stay off while
+// the board is flat — there is nothing to diffuse or turn until it has closed up.
+//
+// Only the *animation* landing counts as "the fold completed". Scrubbing the slider
+// to 100% deliberately does not fire this: someone dragging the handle is inspecting
+// the motion, and having the object start turning under the cursor fights them.
+//
+// Never overrides an explicit choice — a click on either button pins it for the rest
+// of the session (see foldDiffuserBtn / foldSpinBtn), so the reveal cannot switch
+// back on something the user just switched off.
+function revealFolded() {
+  if (!diffuserUserSet && !foldShowDiffuser) setShowDiffuser(true);
+  if (!spinUserSet && !foldSpinning) setSpinning(true);
+  // Both changed from outside a click, so the buttons have to be re-read from state.
+  refreshToggles();
 }
 
 // ── Load fold pair ────────────────────────────────────────────────────────────
@@ -3499,6 +4559,9 @@ bindToggle(foldDomainBtn, 'Domain', () => stripDomain === 'spatial', v => {
 }, ['Spatial', 'Wiring']);
 
 foldEffectSel?.addEventListener('change', () => setEffect(foldEffectSel.value));
+
+foldTextInput?.addEventListener('input', () => setTextMessage(foldTextInput.value));
+foldTextSize?.addEventListener('input', () => setTextScale(Number(foldTextSize.value) / 100));
 foldEnvSel?.addEventListener('change', () => setEnvironment(foldEnvSel.value));
 foldBrightness?.addEventListener('input', () => uploadStrip());
 
@@ -3510,11 +4573,21 @@ bindToggle(foldBoardEnvBtn, 'Board env', () => envBoardOn, v => {
   envBoardOn = v;
   applyBoardEnv(envById(envId));
 });
-bindToggle(foldDiffuserBtn, 'Diffuser', () => foldShowDiffuser, v => setShowDiffuser(v));
+// Clicking either of these opts out of revealFolded()'s auto-enable for the rest of
+// the session. The flag is set here rather than inside setShowDiffuser/setSpinning so
+// that only a real click counts — the reveal itself, and the inspection hook, both go
+// through those setters and must not mark the control as user-chosen.
+bindToggle(foldDiffuserBtn, 'Diffuser', () => foldShowDiffuser, v => {
+  diffuserUserSet = true;
+  setShowDiffuser(v);
+});
 
 foldDiffStandoff?.addEventListener('input', () => applyDiffuserStandoff());
 foldDiffGlow?.addEventListener('input', () => tuneDiffuser());
-bindToggle(foldSpinBtn, 'Spin', () => foldSpinning, v => setSpinning(v));
+bindToggle(foldSpinBtn, 'Spin', () => foldSpinning, v => {
+  spinUserSet = true;
+  setSpinning(v);
+});
 
 const readOrient = () => setOrientation(
   Number(foldOrientX?.value ?? 0) || 0,
@@ -3671,6 +4744,91 @@ window.foldDebug = {
   listEffects: () => EFFECTS.map(e => ({ id: e.id, label: e.label, group: e.group })),
   setEffect,
   setDomain: setStripDomain,
+  setMessage: setTextMessage,
+  setTextScale,
+  // The marquee, twice, as text: first the tape the font laid out, then what this
+  // model's LEDs actually resolve of it, each LED plotted at its own (azimuth, height)
+  // and shaded by how bright it came out. Reading the second one back is the only way
+  // to tell "the message is wrong" from "this shell cannot resolve it".
+  textAscii(w = 96) {
+    if (!textTape || !foldModel?.ledCount) return '(no message)';
+    const tp = textTape, n = foldModel.ledCount;
+    const ramp = ' .:-=+*#%@';
+    const lines = [`message: ${JSON.stringify(textMessage)}   tape ${tp.cols}x${tp.rows}`];
+
+    lines.push('-- tape ' + '-'.repeat(Math.max(0, w - 8)));
+    for (let r = 0; r < tp.rows; r++) {
+      let s = '';
+      for (let x = 0; x < w; x++) s += tp.lum[r * tp.cols + Math.floor(x * tp.cols / w)] ? '#' : '.';
+      lines.push(s);
+    }
+
+    lines.push(`-- as sampled by ${n} LEDs ` + '-'.repeat(Math.max(0, w - 24)));
+    const rows = tp.rows + 2;
+    const grid = Array.from({ length: rows }, () => new Array(w).fill(-1));
+    const shift = effectId === 'text' ? (effectState.shift ?? 0) : 0;
+    const lapCols = textLapCols(), band = textBand(lapCols);
+    const lum = textBlurred(Math.max(1, Math.round(TEXT_BLUR_FRAC * textFootprint * lapCols)));
+    for (let i = 0; i < n; i++) {
+      const u = textUV[i * 2], v = textUV[i * 2 + 1];
+      const l = textSample(lum, tp.cols, tp.rows, u, v, shift, lapCols, band);
+      // Plotted against the SOURCE column, not the angle, so the dump lines up with
+      // the tape above it however much of the message a revolution happens to show.
+      const x = wrapi(Math.round((u * lapCols + shift) * w / tp.cols), w);
+      const b = (v - band.lo) / (band.hi - band.lo);
+      const y = Math.max(0, Math.min(rows - 1, Math.round((1 - b) * (rows - 1))));
+      if (l > grid[y][x]) grid[y][x] = l;
+    }
+    for (const row of grid) {
+      lines.push(row.map(l => l < 0 ? ' ' : ramp[Math.min(9, Math.floor(l / 26))]).join(''));
+    }
+    return lines.join('\n');
+  },
+  // The shader context the ported surface patterns run over. `neighAvg` near
+  // GRAPH_TARGET means the radius search bottomed out; `distMax` is the hop count
+  // across the .led graph, and a 0 there means the graph never linked up.
+  surfaceInfo() {
+    if (!foldModel?.ledCount) return null;
+    const c = ledContext(foldModel.ledCount);
+    const g = c.graph;
+    return {
+      n: c.n,
+      ext: +c.ext.toFixed(2),
+      boxMin: Array.from(c.boxMin, v => +v.toFixed(2)),
+      boxMax: Array.from(c.boxMax, v => +v.toFixed(2)),
+      graphRadius: +g.th.toFixed(4),
+      neighAvg: +(g.idx.length / c.n).toFixed(1),
+      neighMax: Math.max(...Array.from({ length: c.n }, (_, i) => g.start[i + 1] - g.start[i])),
+      distMax: Math.max(...c.dist),
+      ledEdges: foldModel.ledEdges.length,
+      unwired: Array.from(c.mapi).filter(v => v < 0).length,
+    };
+  },
+  // What the marquee currently resolves to. `ledsPerCell` is the legibility number:
+  // a glyph is 5 columns of a 7-column cell, so below about 4 the strokes are landing
+  // between LEDs and no amount of blur will bring the letters back. `seamless` says
+  // whether the lap holds whole copies of the message — see the glyph size note.
+  textInfo() {
+    if (!textTape) return { message: textMessage, tape: null };
+    const lapCols = textLapCols(), band = textBand(lapCols);
+    return {
+      message: textMessage,
+      scale: textScale,
+      cols: textTape.cols, rows: textTape.rows,
+      lapCols, lapCells: lapCols / FONT_ADVANCE,
+      seamless: lapCols % textTape.cols === 0,
+      shift: effectId === 'text' ? (effectState.shift ?? 0) : null,
+      footprintDeg: +(textFootprint * 360).toFixed(2),
+      blurCols: Math.max(1, Math.round(TEXT_BLUR_FRAC * textFootprint * lapCols)),
+      ledsPerCell: +(FONT_ADVANCE / (textFootprint * lapCols)).toFixed(1),
+      band: [+band.lo.toFixed(3), +band.hi.toFixed(3)],
+      // 1.0 means a cell came out square, so the glyphs have the proportions the font
+      // was drawn with. Above 1 the object ran out of height and they are squashed.
+      aspect: +(((2 * Math.PI * textRadius) / lapCols)
+                / (((band.hi - band.lo) * textHeight) / FONT_H)).toFixed(2),
+      radius: +textRadius.toFixed(1), height: +textHeight.toFixed(1),
+    };
+  },
   stepEffect(steps = 1) {
     const n = foldModel.ledCount;
     const eff = effectById(effectId);
@@ -4134,3 +5292,180 @@ function renderJob(job) {
 
 probeBackend();
 refreshFolderPicker();
+
+// ── Call to action: fold it yourself / feedback / contact ─────────────────────
+// A single button at the bottom centre of whichever viewer is up, opening a card
+// with the three things a visitor can actually do next. Self-contained: nothing
+// above this line knows it exists.
+
+// EDIT ME: paste the feedback form's URL (Google Form, Typeform, ...). Left empty
+// the feedback button falls back to a mailto, so the page is never broken by not
+// having decided on a form yet.
+const FEEDBACK_FORM_URL = '';
+const CONTACT_EMAIL     = 'manas161997@gmail.com';
+// Printable templates, from the unfolder's own output tree:
+//
+//   assets/unfold/<mesh>_unfold/<mesh>-unfold-fab.pdf
+//
+// Keyed by MESH, not by fold folder. Each of those folders carries its own
+// default-unfold.cfg — one papercraft unfolding per mesh, independent of the
+// small-dihedral/big-dihedral split that makes two *boards* out of one mesh. So
+// bridge-small and bridge-big are one entry in this list, not two.
+//
+// The "-fab" sibling of "<mesh>-unfold.pdf" is the one to hand out: same
+// unfolding, but drawn to be printed and folded — heavy black cut outline,
+// dashed fold lines, and each pair of edges that glue together in the same
+// colour. The plain file is a 0.1mm-hairline technical drawing.
+const FOLD_PDF_DIR = 'assets/unfold';
+const foldPdfUrl = mesh => `${FOLD_PDF_DIR}/${mesh}_unfold/${mesh}-unfold-fab.pdf`;
+
+const ctaBtn          = document.getElementById('cta-btn');
+const ctaModal        = document.getElementById('cta-modal');
+const ctaCloseBtn     = document.getElementById('cta-close-btn');
+const ctaPdfList      = document.getElementById('cta-pdf-list');
+const ctaFeedbackLink = document.getElementById('cta-feedback-link');
+const ctaContactLink  = document.getElementById('cta-contact-link');
+
+function mailto(subject, body) {
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}` +
+         `&body=${encodeURIComponent(body)}`;
+}
+
+// The fold on screen, or null in the mesh viewer. #fold-folder-name is already the
+// one place the loaded folder is written down, so read it rather than shadowing it
+// with a second copy that can drift.
+function currentFoldFolder() {
+  if (foldViewerEl.classList.contains('hidden')) return null;
+  const name = foldFolderNameEl.textContent.trim();
+  return name && name !== '—' ? name : null;
+}
+
+ctaFeedbackLink.href = FEEDBACK_FORM_URL || mailto(
+  'PCBend viewer — feedback',
+  'What I was looking at:\n\nWhat worked:\n\nWhat did not:\n\n');
+
+ctaContactLink.href = mailto(
+  'PCBend — I would like an LED lamp',
+  'Hi Manas,\n\nI saw the PCBend viewer and I would like one of these as a real ' +
+  'LED lamp.\n\nShape I am after:\n\nRough size:\n\nWhat it is for:\n\n');
+
+// ---- visibility
+// Both viewers are shown and hidden by toggling .hidden on their root, from half a
+// dozen places (load, close, error, the generate hand-off). Watching the class is
+// one hook that cannot miss one of them, instead of a refresh call bolted onto each.
+function refreshCta() {
+  const onMesh = !viewer.classList.contains('hidden');
+  const onFold = !foldViewerEl.classList.contains('hidden');
+  document.body.classList.toggle('fold-active', onFold);
+  ctaBtn.classList.toggle('hidden', !(onMesh || onFold));
+  if (!(onMesh || onFold)) closeCta();
+}
+
+const ctaObserver = new MutationObserver(refreshCta);
+for (const el of [viewer, foldViewerEl]) {
+  ctaObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
+}
+refreshCta();
+
+// ---- the PDF list
+// One row per MESH, collapsing the folders that share an unfolding. The manifest
+// is the source of the folder -> mesh mapping, and the mesh is what names the PDF;
+// an entry without one is skipped rather than guessed at, since a wrong path here
+// is a dead download.
+function foldPdfCandidates(folders, currentFolder) {
+  const byMesh = new Map();
+  for (const f of folders) {
+    if (!f.folder || !f.mesh) continue;
+    const seen = byMesh.get(f.mesh);
+    if (seen) {
+      // Two folders, one unfolding. Keep the row, but let it know it is the one on
+      // screen if EITHER of them is.
+      seen.isCurrent = seen.isCurrent || f.folder === currentFolder;
+      continue;
+    }
+    byMesh.set(f.mesh, {
+      mesh: f.mesh,
+      // splitVariant strips the -small/-big suffix that no longer means anything
+      // once the variants are collapsed.
+      label: f.family || splitVariant(f.folder).family || f.folder,
+      faces: f.faces,
+      url: foldPdfUrl(f.mesh),
+      isCurrent: f.folder === currentFolder,
+    });
+  }
+  return [...byMesh.values()];
+}
+
+// Which meshes have a template is a question about the files on disk, not about
+// anything the manifest records, so ask the server with a HEAD per candidate. A
+// host that refuses HEAD (or a file:// copy, where fetch fails outright) yields no
+// answer at all rather than a wrong one — fall back to listing everything and
+// letting the download 404, which is better than an empty list.
+async function probeFoldPdfs(entries) {
+  const results = await Promise.all(entries.map(async e => {
+    try {
+      const res = await fetch(e.url, { method: 'HEAD' });
+      return { ...e, ok: res.ok, probed: true };
+    } catch {
+      return { ...e, ok: false, probed: false };
+    }
+  }));
+  return results.some(r => r.probed) ? results.filter(r => r.ok) : results;
+}
+
+function renderPdfList(entries) {
+  ctaPdfList.replaceChildren();
+
+  if (!entries.length) {
+    const p = document.createElement('p');
+    p.className = 'cta-note';
+    p.textContent = 'Want to create your own printable templates? — ask me for one.';
+    ctaPdfList.append(p);
+    return;
+  }
+
+  // Current shape first, so the person looking at it does not have to hunt for it;
+  // the rest keep the manifest's order.
+  const sorted = [...entries].sort((a, b) => b.isCurrent - a.isCurrent);
+
+  for (const e of sorted) {
+    const a = document.createElement('a');
+    a.className = 'btn-secondary cta-pdf-item';
+    if (e.isCurrent) a.classList.add('current');
+    a.href = e.url;
+    a.download = `${e.mesh}-fold-template.pdf`;
+    a.append(e.label);
+    const span = document.createElement('span');
+    span.className = 'cta-pdf-sub';
+    span.textContent = e.faces ? `${e.faces} faces` : e.mesh;
+    a.append(span);
+    ctaPdfList.append(a);
+  }
+}
+
+// ---- open / close
+async function openCta() {
+  ctaModal.classList.remove('hidden');
+
+  const loading = document.createElement('p');
+  loading.className = 'cta-note';
+  loading.textContent = 'Looking for templates…';
+  ctaPdfList.replaceChildren(loading);
+
+  const current = currentFoldFolder();
+  await loadManifest();
+  // A copy with no manifest cannot name its meshes, and there is nothing to probe.
+  const candidates = foldPdfCandidates(manifestFolders(), current);
+  renderPdfList(candidates.length ? await probeFoldPdfs(candidates) : []);
+}
+
+function closeCta() {
+  ctaModal.classList.add('hidden');
+}
+
+ctaBtn.addEventListener('click', () => { openCta(); });
+ctaCloseBtn.addEventListener('click', closeCta);
+ctaModal.addEventListener('click', e => { if (e.target === ctaModal) closeCta(); });
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !ctaModal.classList.contains('hidden')) closeCta();
+});

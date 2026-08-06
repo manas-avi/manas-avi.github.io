@@ -131,6 +131,22 @@
         <span>LED effect</span>
         <select id="fold-effect"></select>
       </label>
+      <!-- Feeds the "Word stream" effect: the sentence is wrapped around the shell and
+           turned, so the object spells it out with its own LEDs. Shown only while that
+           effect is selected — nothing else on the page reads either control. -->
+      <div id="fold-text-row" class="panel-group hidden">
+        <label class="panel-text" for="fold-text">
+          <span>Message</span>
+          <input id="fold-text" type="text" maxlength="120" placeholder="Type a sentence&hellip;" />
+        </label>
+        <!-- Below 100% the message repeats round the object; above it, one lap shows
+             a window of the message and the rest streams past. Height follows width,
+             so the glyphs keep their proportions the whole way along. -->
+        <label class="panel-slider" for="fold-text-size">
+          <span>Text size</span>
+          <input id="fold-text-size" type="range" min="50" max="400" value="100" />
+        </label>
+      </div>
       <div class="panel-actions">
         <button id="fold-domain-btn" class="btn-secondary">Domain: Wiring</button>
         <button id="fold-leds-btn" class="btn-secondary">LEDs: On</button>
@@ -211,6 +227,47 @@
     <div id="fold-loading" class="hidden">
       <div class="spinner"></div>
       <p>Loading fold&hellip;</p>
+    </div>
+  </div>
+
+  <!-- Call to action (global, like the toast: it rides over both the mesh viewer
+       and the fold viewer, and hides itself on the dropzone) -->
+  <button id="cta-btn" class="hidden" type="button">
+    <span class="cta-dot"></span>
+    Fold one yourself &middot; tell me what you think
+  </button>
+
+  <div id="cta-modal" class="hidden">
+    <div id="cta-card" role="dialog" aria-modal="true" aria-labelledby="cta-heading">
+      <div class="panel-header">
+        <h2 id="cta-heading">Take it further</h2>
+        <button id="cta-close-btn" class="btn-icon" title="Close">&#x2715;</button>
+      </div>
+
+      <section class="cta-section">
+        <h3>Fold one yourself</h3>
+        <p>Print the template at 100% scale, cut the outline,
+          fold along the hinge strips with matching edge colors.</p>
+        <!-- Filled at open time from the shapes that actually have a PDF -->
+        <div id="cta-pdf-list"></div>
+      </section>
+
+      <div class="panel-divider"></div>
+
+      <section class="cta-section">
+        <h3>Tell me what you think</h3>
+        <p>What worked, what confused you, what you wanted it to do.</p>
+        <a id="cta-feedback-link" class="btn-primary cta-action" href="#">Share feedback</a>
+      </section>
+
+      <div class="panel-divider"></div>
+
+      <section class="cta-section">
+        <h3>Want one as a real lamp?</h3>
+        <p>These fold up from a single flexible PCB with the LEDs already on it.
+           If you would like one made, get in touch.</p>
+        <a id="cta-contact-link" class="btn-secondary cta-action" href="#">Get in touch</a>
+      </section>
     </div>
   </div>
 

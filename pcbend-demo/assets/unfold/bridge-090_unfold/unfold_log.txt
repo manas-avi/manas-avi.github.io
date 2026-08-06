@@ -1,0 +1,273 @@
+BEGIN	unfolder	./data/results/unfold//bridge-090_unfold/default-unfold.cfg ./data/meshes/bridge-090.off ./data/results/unfold//bridge-090_unfold/bridge-090.sheet
+left view : 1 right view :2
+./data/meshes/bridge-090.off
+The mesh is open: 36 border edges in 1 boundary loop(s).
+dualEdgeList = [[51 8], [28 75], [62 58], [62 28], [58 51], [8 52], [15 52], [15 63], [75 29], [52 0], [29 86], [0 43], [43 6], [6 16], [39 86], [39 84], [68 16], [6 49], [37 84], [69 59], [9 49], [69 76], [76 37], [77 76], [17 60], [77 60], [10 47], [32 77], [61 60], [47 4], [4 50], [61 50], [81 32], [61 19], [38 81], [33 66], [85 33], [7 50], [7 53], [66 20], [53 11], [33 82], [34 82], [25 67], [67 54], [11 54], [34 35], [35 87], [25 26], [54 55], [74 26], [35 74], [55 1], [1 44], [44 5], [27 70], [40 87], [83 40], [27 83], [5 48], [83 36], [36 78], [71 21], [12 48], [12 21], [45 13], [79 78], [41 79], [18 13], [72 18], [45 2], [46 2], [46 65], [88 41], [42 88], [22 65], [89 42], [89 30], [73 30], [46 3], [56 3], [73 23], [14 56], [23 24], [14 57], [64 57], [24 64], [80 31], [31 24], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 34
+Iterations done: 1381
+Number of overlaps at the end: 0
+Time taken: 24.5884 seconds
+dual edge: -1 -1
+dual edge: 51 8
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 28 75
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 62 58
+dual edge: 62 28
+dual edge: 58 51
+dual edge: 62 63
+dual edge: 8 52
+dual edge: 15 52
+dual edge: 15 63
+dual edge: 75 29
+dual edge: 29 63
+dual edge: 52 0
+dual edge: -1 -1
+dual edge: 29 86
+dual edge: -1 -1
+dual edge: 16 15
+dual edge: 0 43
+dual edge: 43 6
+dual edge: 6 16
+dual edge: 39 86
+dual edge: 39 84
+dual edge: 68 16
+dual edge: 68 84
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 6 49
+dual edge: -1 -1
+dual edge: 37 84
+dual edge: -1 -1
+dual edge: 69 68
+dual edge: 69 59
+dual edge: 9 59
+dual edge: 9 49
+dual edge: 69 76
+dual edge: 76 37
+dual edge: 17 59
+dual edge: 77 76
+dual edge: 17 60
+dual edge: 77 60
+dual edge: 9 10
+dual edge: 10 17
+dual edge: 10 47
+dual edge: -1 -1
+dual edge: 32 77
+dual edge: -1 -1
+dual edge: 61 60
+dual edge: 47 4
+dual edge: 4 50
+dual edge: 61 50
+dual edge: 81 32
+dual edge: 81 19
+dual edge: 61 19
+dual edge: 38 81
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 38 85
+dual edge: 19 66
+dual edge: 33 66
+dual edge: 85 33
+dual edge: -1 -1
+dual edge: 7 50
+dual edge: -1 -1
+dual edge: 7 53
+dual edge: 66 20
+dual edge: 53 20
+dual edge: 53 11
+dual edge: -1 -1
+dual edge: 33 82
+dual edge: 67 20
+dual edge: 34 82
+dual edge: 25 67
+dual edge: 25 34
+dual edge: -1 -1
+dual edge: 67 54
+dual edge: 11 54
+dual edge: 34 35
+dual edge: -1 -1
+dual edge: 35 87
+dual edge: 25 26
+dual edge: 54 55
+dual edge: 55 26
+dual edge: 74 26
+dual edge: 35 74
+dual edge: 55 1
+dual edge: -1 -1
+dual edge: 1 44
+dual edge: 74 27
+dual edge: 44 5
+dual edge: 27 70
+dual edge: 70 5
+dual edge: -1 -1
+dual edge: 40 87
+dual edge: -1 -1
+dual edge: 83 40
+dual edge: 27 83
+dual edge: 5 48
+dual edge: -1 -1
+dual edge: 83 36
+dual edge: -1 -1
+dual edge: 70 21
+dual edge: 36 78
+dual edge: 78 71
+dual edge: 71 21
+dual edge: 12 48
+dual edge: 12 21
+dual edge: 13 12
+dual edge: 45 13
+dual edge: -1 -1
+dual edge: 79 78
+dual edge: 41 79
+dual edge: -1 -1
+dual edge: 71 72
+dual edge: 72 79
+dual edge: 18 13
+dual edge: 72 18
+dual edge: 18 65
+dual edge: 45 2
+dual edge: 46 2
+dual edge: 46 65
+dual edge: 88 41
+dual edge: 22 42
+dual edge: 42 88
+dual edge: 22 65
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 89 42
+dual edge: 22 73
+dual edge: 89 30
+dual edge: 73 30
+dual edge: -1 -1
+dual edge: 46 3
+dual edge: -1 -1
+dual edge: 56 3
+dual edge: 23 56
+dual edge: 73 23
+dual edge: 14 56
+dual edge: -1 -1
+dual edge: 30 80
+dual edge: -1 -1
+dual edge: 23 24
+dual edge: 14 57
+dual edge: 64 57
+dual edge: 24 64
+dual edge: 80 31
+dual edge: 31 24
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: -1 -1
+hinge edge: 51 8
+hinge edge: 28 75
+hinge edge: 62 58
+hinge edge: 62 28
+hinge edge: 8 52
+hinge edge: 15 52
+hinge edge: 15 63
+hinge edge: 75 29
+hinge edge: 29 63
+hinge edge: 52 0
+hinge edge: 29 86
+hinge edge: 16 15
+hinge edge: 0 43
+hinge edge: 43 6
+hinge edge: 39 86
+hinge edge: 39 84
+hinge edge: 68 16
+hinge edge: 6 49
+hinge edge: 37 84
+hinge edge: 69 68
+hinge edge: 9 59
+hinge edge: 9 49
+hinge edge: 69 76
+hinge edge: 77 76
+hinge edge: 17 60
+hinge edge: 9 10
+hinge edge: 32 77
+hinge edge: 61 60
+hinge edge: 47 4
+hinge edge: 4 50
+hinge edge: 81 32
+hinge edge: 61 19
+hinge edge: 38 81
+hinge edge: 38 85
+hinge edge: 19 66
+hinge edge: 85 33
+hinge edge: 7 50
+hinge edge: 7 53
+hinge edge: 66 20
+hinge edge: 53 20
+hinge edge: 53 11
+hinge edge: 33 82
+hinge edge: 67 20
+hinge edge: 34 82
+hinge edge: 25 67
+hinge edge: 11 54
+hinge edge: 34 35
+hinge edge: 35 87
+hinge edge: 25 26
+hinge edge: 54 55
+hinge edge: 74 26
+hinge edge: 55 1
+hinge edge: 1 44
+hinge edge: 74 27
+hinge edge: 44 5
+hinge edge: 27 70
+hinge edge: 40 87
+hinge edge: 83 40
+hinge edge: 27 83
+hinge edge: 5 48
+hinge edge: 83 36
+hinge edge: 36 78
+hinge edge: 78 71
+hinge edge: 12 48
+hinge edge: 12 21
+hinge edge: 13 12
+hinge edge: 79 78
+hinge edge: 41 79
+hinge edge: 18 13
+hinge edge: 72 18
+hinge edge: 18 65
+hinge edge: 45 2
+hinge edge: 46 2
+hinge edge: 88 41
+hinge edge: 22 42
+hinge edge: 22 65
+hinge edge: 89 42
+hinge edge: 89 30
+hinge edge: 73 30
+hinge edge: 46 3
+hinge edge: 56 3
+hinge edge: 73 23
+hinge edge: 14 56
+hinge edge: 23 24
+hinge edge: 14 57
+hinge edge: 64 57
+hinge edge: 24 64
+hinge edge: 80 31
+hinge edge: 31 24
+Number of overlaps at the end of tabu Unfolder:0
+./data/meshes/bridge-090.off
+./data/results/unfold//bridge-090_unfold/bridge-090.sheet
+./data/results/unfold//bridge-090_unfold/bridge-090-sheet.off
+./data/results/unfold//bridge-090_unfold/bridge-090-unfold.svg
+Glue tabs: 17 placed, 11 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//bridge-090_unfold/bridge-090-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+The current face : 69 is intersecting with the already layed out patch in face : 59
+Found intersection free offset in steps : 3 final offset_scale value 0.400000
+Maximum pair : 57 64 Maximum scaling size : 0.483325 Minimum scaling size : 0.106229
+Using half hinges
+total Half hinge edges: 89
+
+total hinge edges: 89
+
+Done saving sheet file
+END	unfolder	./data/results/unfold//bridge-090_unfold/default-unfold.cfg ./data/meshes/bridge-090.off ./data/results/unfold//bridge-090_unfold/bridge-090.sheet

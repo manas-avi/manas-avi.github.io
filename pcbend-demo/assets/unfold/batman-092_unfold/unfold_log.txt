@@ -1,0 +1,278 @@
+BEGIN	unfolder	./data/results/unfold//batman-092_unfold/default-unfold.cfg ./data/meshes/batman-092.off ./data/results/unfold//batman-092_unfold/batman-092.sheet
+left view : 1 right view :2
+./data/meshes/batman-092.off
+The mesh is open: 26 border edges in 1 boundary loop(s).
+dualEdgeList = [[22 19], [0 19], [69 22], [69 52], [19 18], [69 24], [24 75], [5 0], [74 52], [74 3], [51 18], [15 51], [24 83], [83 84], [79 75], [59 51], [79 50], [15 32], [36 3], [43 70], [89 83], [34 89], [72 59], [17 13], [70 39], [39 90], [46 34], [65 23], [65 46], [78 80], [45 78], [26 13], [90 55], [55 42], [65 71], [63 78], [63 71], [26 31], [68 38], [58 55], [58 68], [77 42], [77 82], [21 30], [54 21], [63 14], [4 54], [4 14], [29 31], [20 68], [20 29], [44 58], [62 44], [10 21], [82 87], [14 1], [1 87], [29 57], [49 44], [41 20], [4 11], [73 62], [73 88], [40 1], [40 56], [60 73], [28 60], [91 57], [28 47], [47 8], [61 48], [61 7], [64 33], [16 25], [35 16], [47 12], [76 7], [76 12], [27 33], [2 9], [27 2], [16 37], [12 85], [37 85], [27 81], [2 53], [6 53], [67 81], [67 66], [85 86], [67 86], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 5
+Iterations done: 5
+Number of overlaps at the end: 0
+Time taken: 0.04693 seconds
+dual edge: -1 -1
+dual edge: 22 19
+dual edge: -1 -1
+dual edge: 0 19
+dual edge: 69 22
+dual edge: -1 -1
+dual edge: 69 52
+dual edge: 19 18
+dual edge: 69 24
+dual edge: 18 75
+dual edge: 24 75
+dual edge: 5 0
+dual edge: -1 -1
+dual edge: 74 52
+dual edge: 74 3
+dual edge: -1 -1
+dual edge: 51 18
+dual edge: 15 5
+dual edge: 15 51
+dual edge: 84 74
+dual edge: 24 83
+dual edge: 83 84
+dual edge: 79 75
+dual edge: 59 51
+dual edge: 50 59
+dual edge: 79 50
+dual edge: 15 32
+dual edge: -1 -1
+dual edge: 36 43
+dual edge: 36 3
+dual edge: 70 84
+dual edge: 43 70
+dual edge: 89 83
+dual edge: 79 34
+dual edge: 34 89
+dual edge: 72 59
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 17 36
+dual edge: 43 17
+dual edge: 17 13
+dual edge: -1 -1
+dual edge: 23 50
+dual edge: 72 80
+dual edge: 23 80
+dual edge: 70 39
+dual edge: 89 90
+dual edge: 39 90
+dual edge: 46 34
+dual edge: 65 23
+dual edge: 65 46
+dual edge: 78 80
+dual edge: -1 -1
+dual edge: 45 78
+dual edge: 26 13
+dual edge: 38 39
+dual edge: 38 26
+dual edge: 90 55
+dual edge: 42 46
+dual edge: 55 42
+dual edge: 65 71
+dual edge: 63 78
+dual edge: 63 71
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 26 31
+dual edge: -1 -1
+dual edge: 68 38
+dual edge: 58 55
+dual edge: 58 68
+dual edge: 77 42
+dual edge: 71 82
+dual edge: 77 82
+dual edge: 54 45
+dual edge: 21 30
+dual edge: 54 21
+dual edge: 63 14
+dual edge: 4 54
+dual edge: 4 14
+dual edge: 29 31
+dual edge: 20 68
+dual edge: 20 29
+dual edge: 44 58
+dual edge: 62 77
+dual edge: 62 44
+dual edge: 10 21
+dual edge: -1 -1
+dual edge: 82 87
+dual edge: 14 1
+dual edge: 1 87
+dual edge: 29 57
+dual edge: -1 -1
+dual edge: 49 44
+dual edge: 41 20
+dual edge: 49 41
+dual edge: -1 -1
+dual edge: 4 11
+dual edge: -1 -1
+dual edge: 73 62
+dual edge: 88 87
+dual edge: 73 88
+dual edge: 40 1
+dual edge: 56 11
+dual edge: 40 56
+dual edge: 49 28
+dual edge: 60 73
+dual edge: 28 60
+dual edge: 41 8
+dual edge: 91 57
+dual edge: 91 25
+dual edge: 8 25
+dual edge: 48 88
+dual edge: 48 40
+dual edge: 56 64
+dual edge: -1 -1
+dual edge: 28 47
+dual edge: 47 8
+dual edge: 91 35
+dual edge: -1 -1
+dual edge: 61 48
+dual edge: 60 7
+dual edge: 61 7
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 64 33
+dual edge: 33 61
+dual edge: 16 25
+dual edge: 35 16
+dual edge: 47 12
+dual edge: 76 7
+dual edge: 76 12
+dual edge: 27 33
+dual edge: 2 9
+dual edge: 27 2
+dual edge: 16 37
+dual edge: 12 85
+dual edge: 37 85
+dual edge: 27 81
+dual edge: 81 76
+dual edge: -1 -1
+dual edge: 2 53
+dual edge: 6 53
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 67 81
+dual edge: 53 66
+dual edge: 67 66
+dual edge: 85 86
+dual edge: 67 86
+dual edge: -1 -1
+dual edge: -1 -1
+hinge edge: 22 19
+hinge edge: 0 19
+hinge edge: 69 22
+hinge edge: 69 52
+hinge edge: 19 18
+hinge edge: 69 24
+hinge edge: 18 75
+hinge edge: 74 52
+hinge edge: 74 3
+hinge edge: 51 18
+hinge edge: 15 5
+hinge edge: 15 51
+hinge edge: 84 74
+hinge edge: 83 84
+hinge edge: 59 51
+hinge edge: 50 59
+hinge edge: 79 50
+hinge edge: 15 32
+hinge edge: 36 3
+hinge edge: 43 70
+hinge edge: 89 83
+hinge edge: 34 89
+hinge edge: 72 59
+hinge edge: 17 36
+hinge edge: 43 17
+hinge edge: 17 13
+hinge edge: 72 80
+hinge edge: 23 80
+hinge edge: 89 90
+hinge edge: 39 90
+hinge edge: 65 23
+hinge edge: 65 46
+hinge edge: 78 80
+hinge edge: 45 78
+hinge edge: 26 13
+hinge edge: 38 39
+hinge edge: 63 78
+hinge edge: 26 31
+hinge edge: 68 38
+hinge edge: 58 55
+hinge edge: 58 68
+hinge edge: 77 42
+hinge edge: 71 82
+hinge edge: 77 82
+hinge edge: 54 45
+hinge edge: 21 30
+hinge edge: 54 21
+hinge edge: 63 14
+hinge edge: 29 31
+hinge edge: 20 68
+hinge edge: 44 58
+hinge edge: 62 77
+hinge edge: 62 44
+hinge edge: 10 21
+hinge edge: 82 87
+hinge edge: 1 87
+hinge edge: 29 57
+hinge edge: 49 44
+hinge edge: 4 11
+hinge edge: 88 87
+hinge edge: 73 88
+hinge edge: 56 11
+hinge edge: 28 60
+hinge edge: 41 8
+hinge edge: 91 57
+hinge edge: 91 25
+hinge edge: 48 88
+hinge edge: 48 40
+hinge edge: 56 64
+hinge edge: 28 47
+hinge edge: 47 8
+hinge edge: 91 35
+hinge edge: 61 48
+hinge edge: 61 7
+hinge edge: 64 33
+hinge edge: 33 61
+hinge edge: 35 16
+hinge edge: 47 12
+hinge edge: 27 33
+hinge edge: 2 9
+hinge edge: 16 37
+hinge edge: 12 85
+hinge edge: 37 85
+hinge edge: 81 76
+hinge edge: 2 53
+hinge edge: 6 53
+hinge edge: 67 81
+hinge edge: 53 66
+hinge edge: 67 66
+hinge edge: 85 86
+hinge edge: 67 86
+Number of overlaps at the end of tabu Unfolder:0
+./data/meshes/batman-092.off
+./data/results/unfold//batman-092_unfold/batman-092.sheet
+./data/results/unfold//batman-092_unfold/batman-092-sheet.off
+./data/results/unfold//batman-092_unfold/batman-092-unfold.svg
+Glue tabs: 21 placed, 13 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//batman-092_unfold/batman-092-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+Maximum pair : 43 17 Maximum scaling size : 0.503881 Minimum scaling size : 0.183986
+Using half hinges
+total Half hinge edges: 88
+
+total hinge edges: 91
+
+The current face : 26 is intersecting with the already layed out patch in face : 70
+ERROR NO COMMON EDGE DEBUGGGGG!!!!
+SPECIAL CASE HANDLING!!!
+offset values : 0.000000 1.852102 1.850261
+Self consistency test
+ Edge eoff_i : 44 is not an hinge : 1 offset value : 1.850261
+Found intersection free offset in steps : 5 final offset_scale value 0.600000
+Done saving sheet file
+END	unfolder	./data/results/unfold//batman-092_unfold/default-unfold.cfg ./data/meshes/batman-092.off ./data/results/unfold//batman-092_unfold/batman-092.sheet
