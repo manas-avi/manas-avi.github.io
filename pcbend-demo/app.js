@@ -5301,7 +5301,7 @@ refreshFolderPicker();
 // EDIT ME: paste the feedback form's URL (Google Form, Typeform, ...). Left empty
 // the feedback button falls back to a mailto, so the page is never broken by not
 // having decided on a form yet.
-const FEEDBACK_FORM_URL = '';
+const FEEDBACK_FORM_URL = 'https://forms.gle/HdNidv7jum61hXZs5';
 const CONTACT_EMAIL     = 'manas161997@gmail.com';
 // Printable templates, from the unfolder's own output tree:
 //
