@@ -1,0 +1,14 @@
+<svg width="96.335320mm" height="79.144903mm" viewBox="0 0 96.335320 79.144903" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 79.1449) scale(1 -1)">
+<path fill="none" stroke="#178ded" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 49.1385 79.1449 L 9.67646 48.8189 "/>
+<path fill="none" stroke="#178ded" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 0 0 L 9.67646 48.8189 "/>
+<path fill="none" stroke="#e4490c" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 86.2739 48.8189 L 49.1385 79.1449 "/>
+<path fill="none" stroke="#e4490c" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 86.2739 48.8189 L 96.3353 1.94158 "/>
+<path fill="none" stroke="#ee1b51" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 0 0 L 47.9752 10.5201 "/>
+<path fill="none" stroke="#ee1b51" style="stroke-width:0.5;stroke-linecap:round;stroke-dasharray:2.40000004,2.40000004;stroke-dashoffset:0;marker-end:url(#ArrowWideHeavy)" d="M 96.3353 1.94158 L 47.9752 10.5201 "/>
+<path fill="none" stroke="black" style="stroke-width:0.5;stroke-linecap:round" d="M 86.2739 48.8189 L 9.67646 48.8189 M 9.67646 48.8189 L 47.9752 10.5201 M 86.2739 48.8189 L 47.9752 10.5201 "/>
+<path fill="#e4490c" stroke="#e4490c" style="fill-opacity:0.35;stroke-width:0.5;stroke-linecap:round" d="M 85.8867 49.1351 L 86.39 52.5973 L 52.8175 80.0137 L 49.5257 78.8286 "/>
+<path fill="#178ded" stroke="#178ded" style="fill-opacity:0.35;stroke-width:0.5;stroke-linecap:round" d="M 48.742 78.8402 L 45.4867 80.1221 L 9.67213 52.5991 L 10.0729 49.1235 "/>
+<path fill="#ee1b51" stroke="#ee1b51" style="fill-opacity:0.35;stroke-width:0.5;stroke-linecap:round" d="M 0.488396 0.107097 L 2.8892 -2.43773 L 46.3712 7.09712 L 47.4868 10.413 "/>
+</g>
+</svg>

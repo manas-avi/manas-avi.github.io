@@ -1,9 +1,11 @@
 {
-  "generated_at": "2026-08-03T22:25:20",
+  "generated_at": "2026-08-04T16:45:44",
   "folders": [
     {
-      "folder": "batman",
+      "folder": "batman-small",
       "mesh": "batman-092",
+      "family": "batman",
+      "variant": "small",
       "faces": 92,
       "files": {
         "off": "batman-092.off",
@@ -13,8 +15,49 @@
       }
     },
     {
-      "folder": "cat-0.2",
+      "folder": "batman-big",
+      "mesh": "batman-092",
+      "family": "batman",
+      "variant": "big",
+      "faces": 92,
+      "files": {
+        "off": "batman-092.off",
+        "sheet": "batman-092.sheet",
+        "led": "batman-092.led",
+        "map": "batman-092.map"
+      }
+    },
+    {
+      "folder": "bridge-small",
+      "mesh": "bridge-090",
+      "family": "bridge",
+      "variant": "small",
+      "faces": 90,
+      "files": {
+        "off": "bridge-090.off",
+        "sheet": "bridge-090.sheet",
+        "led": "bridge-090.led",
+        "map": "bridge-090.map"
+      }
+    },
+    {
+      "folder": "bridge-big",
+      "mesh": "bridge-090",
+      "family": "bridge",
+      "variant": "big",
+      "faces": 90,
+      "files": {
+        "off": "bridge-090.off",
+        "sheet": "bridge-090.sheet",
+        "led": "bridge-090.led",
+        "map": "bridge-090.map"
+      }
+    },
+    {
+      "folder": "cat-small",
       "mesh": "cat-102",
+      "family": "cat",
+      "variant": "small",
       "faces": 102,
       "files": {
         "off": "cat-102.off",
@@ -24,8 +67,10 @@
       }
     },
     {
-      "folder": "cat-0.5",
+      "folder": "cat-big",
       "mesh": "cat-102",
+      "family": "cat",
+      "variant": "big",
       "faces": 102,
       "files": {
         "off": "cat-102.off",
@@ -35,19 +80,10 @@
       }
     },
     {
-      "folder": "cone",
-      "mesh": "cone-030",
-      "faces": 30,
-      "files": {
-        "off": "cone-030.off",
-        "sheet": "cone-030.sheet",
-        "led": "cone-030.led",
-        "map": "cone-030.map"
-      }
-    },
-    {
-      "folder": "cube",
+      "folder": "cube-small",
       "mesh": "cube-012",
+      "family": "cube",
+      "variant": "small",
       "faces": 12,
       "files": {
         "off": "cube-012.off",
@@ -57,8 +93,49 @@
       }
     },
     {
-      "folder": "icosa",
+      "folder": "cube-big",
+      "mesh": "cube-012",
+      "family": "cube",
+      "variant": "big",
+      "faces": 12,
+      "files": {
+        "off": "cube-012.off",
+        "sheet": "cube-012.sheet",
+        "led": "cube-012.led",
+        "map": "cube-012.map"
+      }
+    },
+    {
+      "folder": "dome-big",
+      "mesh": "dome-081",
+      "family": "dome",
+      "variant": "big",
+      "faces": 81,
+      "files": {
+        "off": "dome-081.off",
+        "sheet": "dome-081.sheet",
+        "led": "dome-081.led",
+        "map": "dome-081.map"
+      }
+    },
+    {
+      "folder": "dome-small",
+      "mesh": "dome-081",
+      "family": "dome",
+      "variant": "small",
+      "faces": 81,
+      "files": {
+        "off": "dome-081.off",
+        "sheet": "dome-081.sheet",
+        "led": "dome-081.led",
+        "map": "dome-081.map"
+      }
+    },
+    {
+      "folder": "icosa-small",
       "mesh": "icosa-020",
+      "family": "icosa",
+      "variant": "small",
       "faces": 20,
       "files": {
         "off": "icosa-020.off",
@@ -68,8 +145,23 @@
       }
     },
     {
-      "folder": "star",
+      "folder": "icosa-big",
+      "mesh": "icosa-020",
+      "family": "icosa",
+      "variant": "big",
+      "faces": 20,
+      "files": {
+        "off": "icosa-020.off",
+        "sheet": "icosa-020.sheet",
+        "led": "icosa-020.led",
+        "map": "icosa-020.map"
+      }
+    },
+    {
+      "folder": "star-small",
       "mesh": "star-024",
+      "family": "star",
+      "variant": "small",
       "faces": 24,
       "files": {
         "off": "star-024.off",
@@ -79,14 +171,16 @@
       }
     },
     {
-      "folder": "trap",
-      "mesh": "trap-004",
-      "faces": 4,
+      "folder": "star-big",
+      "mesh": "star-024",
+      "family": "star",
+      "variant": "big",
+      "faces": 24,
       "files": {
-        "off": "trap-004.off",
-        "sheet": "trap-004.sheet",
-        "led": "trap-004.led",
-        "map": "trap-004.map"
+        "off": "star-024.off",
+        "sheet": "star-024.sheet",
+        "led": "star-024.led",
+        "map": "star-024.map"
       }
     }
   ]

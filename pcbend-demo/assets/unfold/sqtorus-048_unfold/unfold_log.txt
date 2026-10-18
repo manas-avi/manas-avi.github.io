@@ -1,0 +1,166 @@
+BEGIN	unfolder	./data/results/unfold//sqtorus-048_unfold/default-unfold.cfg ./data/meshes/sqtorus-048.off ./data/results/unfold//sqtorus-048_unfold/sqtorus-048.sheet
+left view : 1 right view :2
+./data/meshes/sqtorus-048.off
+The mesh is open: 16 border edges in 2 boundary loop(s).
+dualEdgeList = [[42 41], [43 42], [45 44], [40 41], [45 46], [46 47], [38 39], [32 33], [37 36], [35 34], [33 34], [27 42], [40 25], [27 26], [29 44], [29 28], [25 24], [38 23], [11 26], [9 24], [10 11], [8 9], [31 46], [31 30], [22 23], [21 36], [21 22], [11 12], [28 13], [13 12], [7 22], [7 6], [32 17], [17 16], [19 34], [20 21], [18 19], [15 30], [15 14], [5 20], [5 4], [16 1], [15 0], [1 0], [18 3], [4 3], [3 2], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 2
+Iterations done: 1
+Number of overlaps at the end: 0
+Time taken: 0.00416 seconds
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 42 41
+dual edge: 43 42
+dual edge: -1 -1
+dual edge: 44 43
+dual edge: 45 44
+dual edge: -1 -1
+dual edge: 40 41
+dual edge: 39 40
+dual edge: -1 -1
+dual edge: 45 46
+dual edge: 46 47
+dual edge: -1 -1
+dual edge: 38 39
+dual edge: 38 37
+dual edge: -1 -1
+dual edge: 47 32
+dual edge: 32 33
+dual edge: -1 -1
+dual edge: 37 36
+dual edge: 36 35
+dual edge: 35 34
+dual edge: 33 34
+dual edge: 27 42
+dual edge: 40 25
+dual edge: 25 26
+dual edge: 27 26
+dual edge: 29 44
+dual edge: 27 28
+dual edge: 29 28
+dual edge: 25 24
+dual edge: 38 23
+dual edge: 23 24
+dual edge: 10 9
+dual edge: 11 26
+dual edge: 9 24
+dual edge: 10 11
+dual edge: 8 9
+dual edge: -1 -1
+dual edge: -1 -1
+dual edge: 31 46
+dual edge: 29 30
+dual edge: 31 30
+dual edge: 22 23
+dual edge: 21 36
+dual edge: 21 22
+dual edge: 11 12
+dual edge: 28 13
+dual edge: 13 12
+dual edge: 7 8
+dual edge: 7 22
+dual edge: -1 -1
+dual edge: 7 6
+dual edge: -1 -1
+dual edge: 32 17
+dual edge: 31 16
+dual edge: 17 16
+dual edge: 19 34
+dual edge: 20 21
+dual edge: 20 19
+dual edge: 18 19
+dual edge: 18 17
+dual edge: 14 13
+dual edge: 15 30
+dual edge: 15 14
+dual edge: 5 6
+dual edge: 5 20
+dual edge: -1 -1
+dual edge: 5 4
+dual edge: -1 -1
+dual edge: 16 1
+dual edge: 15 0
+dual edge: 1 0
+dual edge: 18 3
+dual edge: 4 3
+dual edge: 3 2
+dual edge: 2 1
+dual edge: -1 -1
+dual edge: -1 -1
+hinge edge: 42 41
+hinge edge: 43 42
+hinge edge: 44 43
+hinge edge: 40 41
+hinge edge: 39 40
+hinge edge: 45 46
+hinge edge: 46 47
+hinge edge: 38 39
+hinge edge: 38 37
+hinge edge: 47 32
+hinge edge: 32 33
+hinge edge: 37 36
+hinge edge: 36 35
+hinge edge: 35 34
+hinge edge: 33 34
+hinge edge: 27 42
+hinge edge: 40 25
+hinge edge: 38 23
+hinge edge: 10 9
+hinge edge: 11 26
+hinge edge: 9 24
+hinge edge: 10 11
+hinge edge: 8 9
+hinge edge: 31 46
+hinge edge: 29 30
+hinge edge: 31 30
+hinge edge: 21 36
+hinge edge: 11 12
+hinge edge: 28 13
+hinge edge: 13 12
+hinge edge: 7 8
+hinge edge: 7 22
+hinge edge: 7 6
+hinge edge: 31 16
+hinge edge: 17 16
+hinge edge: 19 34
+hinge edge: 20 21
+hinge edge: 18 17
+hinge edge: 14 13
+hinge edge: 15 30
+hinge edge: 15 14
+hinge edge: 5 20
+hinge edge: 5 4
+hinge edge: 15 0
+hinge edge: 4 3
+hinge edge: 3 2
+hinge edge: 2 1
+Number of overlaps at the end of tabu Unfolder:1
+The unfolding still overlaps. Handing over to the overlap resolution stage
+Currently in iteration: 0 of the algorithm
+Removal operation: 1 Number of overlapping triangles: 0
+Mesh Decimation sucessfull. Took 1 iterations to decimate
+Final mesh statistics: V: 31 F: 46
+Decimation's method took: 0.136881 seconds
+Energy before postProcess: 12.421102 2.016900
+Energy after postProcess: 12.421102 2.019781
+Succesfully found decimation 1
+Compacted mesh: 46 faces, 0.000000 overlapping triangle pairs
+./data/meshes/sqtorus-048.off
+./data/results/unfold//sqtorus-048_unfold/sqtorus-048.sheet
+./data/results/unfold//sqtorus-048_unfold/sqtorus-048-sheet.off
+./data/results/unfold//sqtorus-048_unfold/sqtorus-048-unfold.svg
+Glue tabs: 10 placed, 6 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//sqtorus-048_unfold/sqtorus-048-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+Maximum pair : 41 40 Maximum scaling size : 0.382396 Minimum scaling size : 0.083316
+Using half hinges
+total Half hinge edges: 45
+
+total hinge edges: 45
+
+Done saving sheet file
+END	unfolder	./data/results/unfold//sqtorus-048_unfold/default-unfold.cfg ./data/meshes/sqtorus-048.off ./data/results/unfold//sqtorus-048_unfold/sqtorus-048.sheet

@@ -1,0 +1,307 @@
+BEGIN	unfolder	./data/results/unfold//vadedra-106_unfold/default-unfold.cfg ./data/meshes/vadedra-106.off ./data/results/unfold//vadedra-106_unfold/vadedra-106.sheet
+left view : 1 right view :2
+./data/meshes/vadedra-106.off
+The mesh is open: 12 border edges in 1 boundary loop(s).
+dualEdgeList = [[88 92], [70 81], [35 48], [70 88], [48 4], [88 11], [76 38], [76 81], [1 2], [39 38], [63 86], [86 94], [63 56], [56 40], [4 13], [18 1], [13 18], [31 11], [40 66], [31 66], [39 36], [102 94], [14 102], [8 36], [22 2], [95 36], [22 95], [33 13], [56 15], [15 26], [58 26], [59 99], [58 59], [20 31], [105 104], [55 18], [55 72], [83 66], [37 83], [8 44], [87 104], [95 97], [97 75], [50 55], [5 50], [83 90], [84 90], [43 97], [43 80], [6 37], [6 16], [46 105], [21 5], [87 100], [100 28], [73 41], [16 65], [73 65], [17 84], [80 96], [89 96], [47 91], [46 23], [23 68], [98 68], [60 28], [60 51], [85 65], [47 69], [85 69], [96 45], [51 7], [7 45], [89 71], [9 10], [71 10], [91 103], [103 57], [67 60], [27 57], [19 42], [93 85], [93 19], [71 82], [32 82], [61 67], [61 52], [101 103], [79 25], [101 25], [78 0], [93 30], [29 52], [77 101], [62 77], [49 82], [74 64], [74 49], [78 54], [29 24], [24 54], [24 3], [12 3], [74 53], [34 53], ]
+Initializing the algorithm with tabuUnfolder
+Number of collisions: 3
+Iterations done: 2
+Number of overlaps at the end: 0
+Time taken: 0.01143 seconds
+dual edge: 48 92
+dual edge: 88 92
+dual edge: 35 81
+dual edge: 70 81
+dual edge: 35 48
+dual edge: 70 88
+dual edge: -1 -1
+dual edge: 48 4
+dual edge: -1 -1
+dual edge: 88 11
+dual edge: -1 -1
+dual edge: 76 38
+dual edge: 76 81
+dual edge: 1 35
+dual edge: 2 38
+dual edge: 1 2
+dual edge: 76 63
+dual edge: 94 39
+dual edge: 39 38
+dual edge: 63 86
+dual edge: 86 94
+dual edge: 40 70
+dual edge: 63 56
+dual edge: 56 40
+dual edge: 4 13
+dual edge: 18 1
+dual edge: 13 18
+dual edge: 31 11
+dual edge: 40 66
+dual edge: 31 66
+dual edge: 39 36
+dual edge: 102 94
+dual edge: 14 102
+dual edge: 14 8
+dual edge: 8 36
+dual edge: 22 2
+dual edge: 95 36
+dual edge: 22 95
+dual edge: 33 13
+dual edge: -1 -1
+dual edge: 26 86
+dual edge: 56 15
+dual edge: 15 26
+dual edge: 99 102
+dual edge: 58 26
+dual edge: 59 99
+dual edge: 58 59
+dual edge: 20 31
+dual edge: -1 -1
+dual edge: 104 14
+dual edge: 105 99
+dual edge: 105 104
+dual edge: 55 18
+dual edge: 72 22
+dual edge: 55 72
+dual edge: 83 66
+dual edge: 15 37
+dual edge: 37 83
+dual edge: 8 44
+dual edge: 44 87
+dual edge: 87 104
+dual edge: 95 97
+dual edge: 75 44
+dual edge: 97 75
+dual edge: 33 5
+dual edge: 50 55
+dual edge: 5 50
+dual edge: 20 84
+dual edge: 83 90
+dual edge: 84 90
+dual edge: 72 80
+dual edge: 43 97
+dual edge: 43 80
+dual edge: 16 58
+dual edge: 6 37
+dual edge: 6 16
+dual edge: 41 59
+dual edge: 46 105
+dual edge: 41 46
+dual edge: 21 5
+dual edge: -1 -1
+dual edge: 87 100
+dual edge: 75 28
+dual edge: 100 28
+dual edge: 73 41
+dual edge: 16 65
+dual edge: 73 65
+dual edge: 17 84
+dual edge: -1 -1
+dual edge: 80 96
+dual edge: 89 50
+dual edge: 89 96
+dual edge: 6 47
+dual edge: 91 90
+dual edge: 47 91
+dual edge: 46 23
+dual edge: 98 100
+dual edge: 23 68
+dual edge: 98 68
+dual edge: 43 51
+dual edge: 60 28
+dual edge: 60 51
+dual edge: 73 42
+dual edge: 23 42
+dual edge: 85 65
+dual edge: 47 69
+dual edge: 85 69
+dual edge: 96 45
+dual edge: 51 7
+dual edge: 7 45
+dual edge: 9 21
+dual edge: 89 71
+dual edge: 9 10
+dual edge: 71 10
+dual edge: -1 -1
+dual edge: 17 57
+dual edge: 91 103
+dual edge: 103 57
+dual edge: 67 60
+dual edge: 98 67
+dual edge: 27 57
+dual edge: -1 -1
+dual edge: 19 42
+dual edge: 93 85
+dual edge: 93 19
+dual edge: 32 45
+dual edge: 71 82
+dual edge: 32 82
+dual edge: 61 67
+dual edge: 52 7
+dual edge: 61 52
+dual edge: 68 0
+dual edge: 0 19
+dual edge: 69 79
+dual edge: 101 103
+dual edge: 79 25
+dual edge: 101 25
+dual edge: 78 0
+dual edge: 78 61
+dual edge: 93 30
+dual edge: 30 79
+dual edge: 29 52
+dual edge: 32 29
+dual edge: 10 64
+dual edge: -1 -1
+dual edge: 27 62
+dual edge: 77 101
+dual edge: 62 77
+dual edge: 49 82
+dual edge: 74 64
+dual edge: 74 49
+dual edge: 78 54
+dual edge: 30 54
+dual edge: -1 -1
+dual edge: 29 24
+dual edge: 24 54
+dual edge: 24 3
+dual edge: 12 3
+dual edge: 49 12
+dual edge: 25 3
+dual edge: 12 34
+dual edge: 34 77
+dual edge: 74 53
+dual edge: -1 -1
+dual edge: 34 53
+hinge edge: 48 92
+hinge edge: 88 92
+hinge edge: 70 81
+hinge edge: 35 48
+hinge edge: 70 88
+hinge edge: 48 4
+hinge edge: 76 38
+hinge edge: 1 35
+hinge edge: 1 2
+hinge edge: 76 63
+hinge edge: 94 39
+hinge edge: 63 86
+hinge edge: 86 94
+hinge edge: 40 70
+hinge edge: 56 40
+hinge edge: 18 1
+hinge edge: 13 18
+hinge edge: 31 11
+hinge edge: 40 66
+hinge edge: 31 66
+hinge edge: 39 36
+hinge edge: 102 94
+hinge edge: 14 8
+hinge edge: 95 36
+hinge edge: 26 86
+hinge edge: 15 26
+hinge edge: 99 102
+hinge edge: 58 26
+hinge edge: 59 99
+hinge edge: 20 31
+hinge edge: 104 14
+hinge edge: 105 99
+hinge edge: 105 104
+hinge edge: 55 18
+hinge edge: 72 22
+hinge edge: 55 72
+hinge edge: 44 87
+hinge edge: 87 104
+hinge edge: 95 97
+hinge edge: 97 75
+hinge edge: 33 5
+hinge edge: 50 55
+hinge edge: 5 50
+hinge edge: 20 84
+hinge edge: 83 90
+hinge edge: 84 90
+hinge edge: 72 80
+hinge edge: 43 80
+hinge edge: 16 58
+hinge edge: 6 37
+hinge edge: 6 16
+hinge edge: 41 59
+hinge edge: 46 105
+hinge edge: 87 100
+hinge edge: 100 28
+hinge edge: 16 65
+hinge edge: 73 65
+hinge edge: 17 84
+hinge edge: 80 96
+hinge edge: 89 96
+hinge edge: 91 90
+hinge edge: 47 91
+hinge edge: 98 100
+hinge edge: 98 68
+hinge edge: 60 51
+hinge edge: 23 42
+hinge edge: 85 65
+hinge edge: 85 69
+hinge edge: 96 45
+hinge edge: 51 7
+hinge edge: 9 21
+hinge edge: 89 71
+hinge edge: 9 10
+hinge edge: 71 10
+hinge edge: 91 103
+hinge edge: 103 57
+hinge edge: 67 60
+hinge edge: 98 67
+hinge edge: 27 57
+hinge edge: 19 42
+hinge edge: 93 85
+hinge edge: 93 19
+hinge edge: 71 82
+hinge edge: 32 82
+hinge edge: 61 67
+hinge edge: 61 52
+hinge edge: 69 79
+hinge edge: 101 103
+hinge edge: 101 25
+hinge edge: 78 0
+hinge edge: 78 61
+hinge edge: 27 62
+hinge edge: 77 101
+hinge edge: 49 82
+hinge edge: 74 64
+hinge edge: 74 49
+hinge edge: 78 54
+hinge edge: 30 54
+hinge edge: 29 24
+hinge edge: 24 54
+hinge edge: 24 3
+hinge edge: 12 3
+hinge edge: 49 12
+hinge edge: 74 53
+hinge edge: 34 53
+Number of overlaps at the end of tabu Unfolder:0
+./data/meshes/vadedra-106.off
+./data/results/unfold//vadedra-106_unfold/vadedra-106.sheet
+./data/results/unfold//vadedra-106_unfold/vadedra-106-sheet.off
+./data/results/unfold//vadedra-106_unfold/vadedra-106-unfold.svg
+Glue tabs: 23 placed, 25 cut edges had no room for one
+Done saving sheet as SVG
+./data/results/unfold//vadedra-106_unfold/vadedra-106-unfold-fab.svg
+Number of overlapping pairs: 0
+]
+Applying dihedral angle dependent offset to each triangle face
+Maximum pair : 99 105 Maximum scaling size : 0.533665 Minimum scaling size : 0.256758
+Using half hinges
+total Half hinge edges: 105
+
+total hinge edges: 105
+
+The current face : 32 is intersecting with the already layed out patch in face : 29
+Found intersection free offset in steps : 1 final offset_scale value 0.200000
+The current face : 45 is intersecting with the already layed out patch in face : 32
+Found intersection free offset in steps : 1 final offset_scale value 0.200000
+The current face : 13 is intersecting with the already layed out patch in face : 33
+Found intersection free offset in steps : 1 final offset_scale value 0.200000
+The current face : 4 is intersecting with the already layed out patch in face : 13
+Found intersection free offset in steps : 1 final offset_scale value 0.200000
+Done saving sheet file
+END	unfolder	./data/results/unfold//vadedra-106_unfold/default-unfold.cfg ./data/meshes/vadedra-106.off ./data/results/unfold//vadedra-106_unfold/vadedra-106.sheet
