@@ -39,9 +39,25 @@ collections:
 # jekyll-sitemap picks up any .html it finds, so keep it out of sitemap.xml --
 # listing an unlinked page is an open invitation to crawl it. The page also
 # carries its own <meta name="robots" content="noindex, nofollow">.
+# Setting exclude replaces Jekyll's default list, so the defaults are repeated here.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - lumen-form/README.md
+
 defaults:
   - scope:
       path: "pcbend-demo"
+    values:
+      sitemap: false
+  # lumen-form/ is the LUMEN questionnaire, shared by link only (same reasoning as above).
+  - scope:
+      path: "lumen-form"
     values:
       sitemap: false
 
