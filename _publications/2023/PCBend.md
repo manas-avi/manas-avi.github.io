@@ -68,6 +68,13 @@ teaser:
   images:
   - url: teaser.png
     alt: teaser
+
+gallery:
+  caption: |
+    Fabricated PCBend models: flat PCB panels bent onto 3D printed cores, with unfolded boards in the foreground.
+  images:
+  - url: pcbend-gallery-crop.jpg
+    alt: Five fabricated PCBend models lit with RGB LEDs, next to unfolded PCB panels
 ---
 
 ## {{ page.title }}
@@ -89,7 +96,13 @@ teaser:
 * [Supplemental]({{page.supplemental}})
 * [Video]({{page.video}})
 * [Code](https://github.com/mfremer/pcbend)
+* [Instagram](https://www.instagram.com/p/CvuklR3uKDY/)
 <br>
+
+
+### Fabricated Models
+
+{% include figure.html caption=page.gallery.caption images=page.gallery.images columns=1 %}
 
 
 ### Citation
