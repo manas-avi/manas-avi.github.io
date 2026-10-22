@@ -18,6 +18,7 @@ const KEEP_FIXED = ["Existing luminaires I am asked to reuse","Existing ceiling 
 const LIKERT_LABELS = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
 const LIKERT = [
   "Re-entering parameters, repositioning fixtures and re-running calculations takes up a large share of my revision work.",
+  "Generating first alternatives directly from a brief would save me real effort on new designs.",
   "I would want to review and approve LUMEN’s technical interpretation of a brief before any alternatives are generated.",
   "Fixing certain products or positions and letting the system explore only the rest would save me real effort.",
   "Alternatives shown with calculated performance and estimated installation cost would help me discuss trade-offs with clients.",
@@ -27,6 +28,7 @@ const LIKERT = [
 ];
 const BARRIERS = ["Preparing project data (geometry, product catalogue)","Trusting the calculated results","Fitting into DIALux, Relux or BIM workflows","Subscription cost","Training time","Responsibility for final design sign-off","Client data confidentiality","Nothing major"];
 const BUYERS = ["I would decide","Practice owner or director","Technical director","Software or IT budget holder","A shared decision","Not sure"];
+const HELP_MOST = ["First designs, starting from a brief","Revisions to an existing scheme","Both about equally","Neither"];
 const PILOTS = ["Not interested","I would want to see prototype results first","I would discuss a paid pilot after seeing results and terms","Not sure"];
 const GATES = {
   yes:"Yes, I’d like to continue to the letter of intent",
@@ -45,8 +47,8 @@ const pad2 = n => String(n).padStart(2,"0");
 const todayISO = (()=>{const d=new Date();return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());})();
 const S = {
   practice:"",name:"",role:"",email:"",type:"",size:"",
-  projects:"",briefSrc:[],briefHandle:"",keepFixed:[],freq:"",triggers:[],tools:[],toolsOther:"",timePer:"",
-  lk:{},barriers:[],barriersOther:"",buyer:"",pilot:"",problem:"",feedback:"",gate:"",
+  projects:"",briefSrc:[],briefHandle:"",timeFirst:"",keepFixed:[],freq:"",triggers:[],tools:[],toolsOther:"",timePer:"",
+  lk:{},barriers:[],barriersOther:"",buyer:"",helpMost:"",pilot:"",problem:"",feedback:"",gate:"",
   meetingDate:"",meetingPlace:"",involve:[false,false,false,false],
   sigMode:"draw",sigTyped:"",strokes:[],padW:0,sigData:"",sigW:0,sigH:0,sigDate:todayISO,confirm:false
 };
@@ -102,8 +104,8 @@ function stepAbout(){
   return `<section>
   <div class="hero">
     <div>
-      <h1 id="h" tabindex="-1">Tell us whether LUMEN fits the way you revise lighting schemes</h1>
-      <p class="lead">LUMEN is a proposed co-pilot for architects and lighting designers. When products, budgets or requirements change, it explores replacement luminaires and permitted layout changes, keeps the decisions you have fixed, and shows each alternative with its calculated performance and estimated cost.</p>
+      <h1 id="h" tabindex="-1">Tell us whether LUMEN fits the way you design and revise lighting schemes</h1>
+      <p class="lead">LUMEN is a proposed co-pilot for architects and lighting designers. Starting from a brief, or when products, budgets or requirements change on an existing scheme, it explores luminaires and layouts, keeps the decisions you have fixed, and shows each alternative with its calculated performance and estimated cost.</p>
     </div>
     <figure class="polar-wrap"><svg class="polar" viewBox="-112 -108 224 220" aria-hidden="true">${polarInner()}</svg>
       <figcaption>A luminaire’s light distribution. The small copy in the header fills in as you move through this form.</figcaption></figure>
@@ -138,10 +140,11 @@ function stepYou(){
 function stepQuestions(){
   return `<section>${errBox}<h2 id="h" tabindex="-1">Questions about your work and our approach</h2>
   <p class="muted">Answer what you can. There are no wrong answers, and only the final question is required.</p>
-  <h3 style="border-top:0;padding-top:0;margin-top:1.8rem">Client briefs and projects</h3>
+  <h3 style="border-top:0;padding-top:0;margin-top:1.8rem">Client briefs and first designs</h3>
   ${radios("projects","What kind of projects do you mostly work on?",PROJECTS,{opt:true})}
   ${checks("briefSrc","How do client briefs usually reach you?",BRIEF_SRC,{opt:true,hint:"Choose all that apply."})}
   ${radios("briefHandle","How do you usually turn a brief into a lighting scheme?",BRIEF_HANDLE,{opt:true})}
+  ${radios("timeFirst","For a typical room, how much active working time does the first lighting scheme take?",TIME,{opt:true})}
   ${checks("keepFixed","In a renovation, what usually has to stay fixed?",KEEP_FIXED,{opt:true,hint:"Choose all that apply. Skip this if you rarely renovate."})}
   <h3>Revisions and tools</h3>
   ${radios("freq","How often do you revise an indoor lighting scheme after the first design?",FREQ,{two:true,opt:true})}
@@ -152,6 +155,7 @@ function stepQuestions(){
   <h3>LUMEN’s proposal</h3>
   <p class="muted">How far do you agree with each statement?</p>
   ${LIKERT.map((t,i)=>likert(i+1,t)).join("")}
+  ${radios("helpMost","Where would a tool like LUMEN help you most?",HELP_MOST,{opt:true,two:true})}
   <h3>Adopting a tool like this</h3>
   ${checks("barriers","What would hold your practice back from adopting it?",BARRIERS,{opt:true,two:true,hint:"Choose all that apply."})}
   ${field("barriersOther","Other concerns",{opt:true})}
@@ -359,10 +363,11 @@ function qaList(){
     {h:"About the respondent"},
     {q:"Practice or organisation",a:S.practice},{q:"Name",a:S.name},{q:"Role",a:S.role},{q:"Professional email",a:S.email},
     {q:"Type of practice",a:S.type},{q:"Team size",a:S.size},
-    {h:"Client briefs and projects"},
+    {h:"Client briefs and first designs"},
     {q:"Kind of projects mostly worked on",a:S.projects},
     {q:"How client briefs usually arrive",a:j(S.briefSrc)},
     {q:"How a brief is turned into a lighting scheme",a:S.briefHandle},
+    {q:"Active working time for the first lighting scheme of a typical room",a:S.timeFirst},
     {q:"What usually has to stay fixed in a renovation",a:j(S.keepFixed)},
     {h:"Revisions and tools"},
     {q:"How often do you revise an indoor lighting scheme after the first design?",a:S.freq},
@@ -371,6 +376,7 @@ function qaList(){
     {q:"Active working time for one typical room revision",a:S.timePer},
     {h:"LUMEN’s proposal (agreement with each statement)"},
     ...lk,
+    {q:"Where a tool like LUMEN would help most",a:S.helpMost},
     {h:"Adopting a tool like this"},
     {q:"What would hold the practice back from adopting it?",a:barr},
     {q:"Who would decide to buy?",a:S.buyer},
