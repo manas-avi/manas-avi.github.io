@@ -60,6 +60,10 @@ defaults:
       path: "lumen-form"
     values:
       sitemap: false
+  - scope:
+      path: "lumen"
+    values:
+      sitemap: false
 
 
 navigation:

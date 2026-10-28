@@ -1,0 +1,36 @@
+/* Landing page additions. Tokens, base type, buttons and the polar diagram come from ../lumen-form/styles.css. */
+.landing main{max-width:60rem;padding-top:3rem}
+.landing footer{max-width:60rem}
+.landing .top{padding:.7rem 1.25rem}
+
+.landing section{margin:0 0 3.5rem}
+.landing section > h2{margin-bottom:1rem}
+.landing .hero{gap:2rem 3rem;margin-bottom:4rem}
+.landing .hero > div:first-child{flex:1 1 24rem}
+.eyebrow{font-size:.85rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--lobe-line);margin:0 0 .8rem}
+.landing h1{margin-bottom:.4rem}
+.cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.6rem}
+
+.polar-wrap.big{flex:0 0 17rem}
+.polar-wrap.big .polar{width:17rem;height:17rem}
+.polar-wrap.big figcaption{max-width:17rem}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem}
+.card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--lobe);border-radius:4px;padding:1.1rem 1.3rem}
+.card h3{margin:0 0 .4rem;padding:0;border:0}
+.card p{margin:.4rem 0 0}
+
+ol.steps{list-style:none;padding:0;counter-reset:s;display:grid;gap:.8rem}
+ol.steps li{counter-increment:s;position:relative;margin:0;padding:.9rem 1rem .9rem 3.4rem;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+ol.steps li::before{content:counter(s);position:absolute;left:1rem;top:.85rem;width:1.6rem;height:1.6rem;border-radius:50%;
+  background:var(--ink);color:var(--on-ink);font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+
+.band{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:clamp(1.3rem,4vw,2.2rem)}
+.band h2{margin-bottom:.4rem}
+.band .btn{margin-top:.6rem}
+
+@media (max-width:40rem){
+  .landing .top .btn{padding:.5rem .8rem;font-size:.88rem}
+  .polar-wrap.big{flex-basis:14rem}
+  .polar-wrap.big .polar{width:14rem;height:14rem}
+}
