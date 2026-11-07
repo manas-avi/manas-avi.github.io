@@ -120,7 +120,7 @@ function stepAbout(){
   </details>
   <div class="note">
     <p><strong>Where LUMEN stands today</strong></p>
-    <p>LUMEN is at concept stage. The first prototype will cover room-scale indoor electric lighting, using supplied geometry and a controlled product catalogue. Open-ended brief interpretation, daylight optimisation, whole-building energy assessment and production-level BIM integration are outside that first scope. Technical performance, workflow benefit and commercial terms are still to be developed and evaluated.</p>
+    <p>LUMEN is at validation stage. The first prototype will cover room-scale indoor electric lighting, using supplied geometry and a controlled product catalogue. Open-ended brief interpretation, daylight optimisation, whole-building energy assessment and production-level BIM integration are outside that first scope. Technical performance, workflow benefit and commercial terms are still to be developed and evaluated.</p>
   </div>
   <p><strong>What we’re asking of you.</strong> About five minutes of questions on your work and our approach. If LUMEN looks relevant to your practice, you can then sign a short letter of intent that does not commit you to anything. ${SUBMIT_URL?"At the end you send your response to us directly.":"At the end you save your files and email them to us."}</p>
   <div class="nav"><span></span><button class="btn" id="next">Start</button></div>
@@ -180,7 +180,7 @@ function stepLetter(){
     <div class="row">${field("meetingDate","Meeting date",{type:"date"})}${field("meetingPlace","Location or online")}</div>
     <p>Following our discussion of LUMEN, we express interest in its proposed approach to revising indoor lighting schemes when products, budgets or requirements change. The ability to explore replacement luminaires and permitted layout changes while preserving agreed design decisions could be relevant to our practice.</p>
     ${textarea("problem","A revision problem or use case relevant to our work is:",{rows:4})}
-    <p>We understand that LUMEN is currently at concept stage. A working prototype and its technical performance, workflow benefits and commercial terms remain to be developed and evaluated.</p>
+    <p>We understand that LUMEN is currently at validation stage. A working prototype and its technical performance, workflow benefits and commercial terms remain to be developed and evaluated.</p>
     <fieldset class="grp" id="g-inv" tabindex="-1"><legend>Our intended involvement (tick only the options that apply):</legend>
       <div class="choices">${INVOLVE.map((t,i)=>`<label class="choice"><input type="checkbox" data-inv="${i}"${S.involve[i]?" checked":""}><span class="mark c"></span><span>${esc(t)}</span></label>`).join("")}</div></fieldset>
     <p>Participation would be subject to our availability and agreement on scope, timing, access and any costs. This letter records present interest and is not intended to create a binding obligation to participate, purchase, pay, provide data or enter an exclusive arrangement. Any pilot, purchase or data sharing would require separate agreement.</p>
@@ -446,7 +446,7 @@ function buildLetter(){
   write("A revision problem or use case relevant to our work is:",{gap:1});
   ruled("",S.problem);
   st.y+=2;
-  write("We understand that LUMEN is currently at concept stage. A working prototype and its technical performance, workflow benefits and commercial terms remain to be developed and evaluated.",{gap:4});
+  write("We understand that LUMEN is currently at validation stage. A working prototype and its technical performance, workflow benefits and commercial terms remain to be developed and evaluated.",{gap:4});
   write("Our intended involvement (tick only the options that apply):",{font:"helvetica",style:"bold",size:10,gap:2});
   S.involve.forEach((on,i)=>{
     const lines=doc.splitTextToSize(pdfClean(INVOLVE[i]),TW-8);

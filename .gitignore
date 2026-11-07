@@ -5,3 +5,6 @@ _site
 /vendor
 .claude/
 CLAUDE.md
+.agents/
+.bundle/
+skills-lock.json
