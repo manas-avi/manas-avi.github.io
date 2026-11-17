@@ -1,86 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LUMEN: lighting design co-pilot</title>
-<meta name="description" content="LUMEN is a proposed co-pilot for designing and revising indoor lighting schemes. Tell us whether it fits your practice in a five-minute questionnaire.">
+<meta name="description" content="LUMEN is a co-pilot for lighting design: it searches real products from several manufacturers together with where to place them, checks every option and leaves the final choice to the designer. Tell us whether it fits your practice.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="LUMEN: lighting design co-pilot">
-<meta property="og:description" content="A proposed co-pilot for designing and revising indoor lighting schemes. Five minutes of questions, then an optional non-binding letter of intent.">
+<meta property="og:description" content="A co-pilot for lighting design that chooses real products and their placement together. Five minutes of questions, then an optional non-binding letter of intent.">
 <meta name="twitter:card" content="summary">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%A1%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lumen-form/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="landing.css">
 </head>
-<body class="landing">
+<body>
 <header class="top">
-  <a class="brand" href="./">LUMEN</a>
-  <a class="btn sm" href="../lumen-form/">Take the questionnaire</a>
+  <div class="wrap">
+    <a class="brand" href="./">LUMEN</a>
+    <nav aria-label="Page">
+      <a href="#how">How it works</a>
+      <a href="#options">Options</a>
+      <a href="#team">Team</a>
+    </nav>
+    <a class="pill sm" href="../lumen-form/">Questionnaire</a>
+  </div>
 </header>
 
 <main>
-  <section class="hero">
-    <div>
-      <p class="eyebrow">Validation stage · looking for practitioner feedback</p>
-      <h1>A co-pilot for designing and revising indoor lighting schemes</h1>
-      <p class="lead">LUMEN is a proposed co-pilot for architects and lighting designers. Starting from a brief, or when products, budgets or requirements change on an existing scheme, it explores luminaires and layouts, keeps the decisions you have fixed, and shows each alternative with its calculated performance and estimated cost.</p>
-      <div class="cta">
-        <a class="btn" href="../lumen-form/">Take the 5-minute questionnaire</a>
-        <a class="btn ghost" href="#how">How it would work</a>
+
+  <!-- Hero: the classroom render fills the screen behind the text -->
+  <section class="hero night" aria-labelledby="hero-h">
+    <img class="hero-bg" src="img/option-a-front.jpg" srcset="img/option-a-front.jpg 1280w, img/option-a-front-2560.jpg 2560w" sizes="100vw" width="1280" height="720" fetchpriority="high" alt="Rendered classroom lit by 30 pendant luminaires placed by LUMEN, viewed toward the blackboard.">
+    <div class="hero-inner wrap center">
+      <p class="eyebrow reveal">Validation stage · looking for practitioner feedback</p>
+      <h1 id="hero-h" class="reveal d1">A co-pilot for lighting&nbsp;design.</h1>
+      <p class="lead reveal d2">LUMEN searches real products from several manufacturers together with where to place them, checks every option against your targets and leaves the final choice to you.</p>
+      <div class="cta reveal d3">
+        <a class="pill" href="#how">See how it would work</a>
+        <a class="pill ghost" href="../lumen-form/">Take the 5-minute questionnaire</a>
       </div>
     </div>
-    <figure class="polar-wrap big"><svg class="polar" id="polar" viewBox="-112 -108 224 220" aria-hidden="true"></svg>
-      <figcaption>A luminaire’s light distribution, the kind of manufacturer photometric data LUMEN works with.</figcaption></figure>
+    <p class="hero-credit">Rendered in Blender with the luminaires’ photometry · Classroom scene by Christophe Seux (CC0)</p>
   </section>
 
-  <section>
-    <h2>Two stages of every lighting scheme</h2>
-    <div class="cards">
-      <article class="card">
-        <h3>First designs</h3>
-        <p>How long does it take you to turn “warm, calm, not too bright” into lux levels, products and positions?</p>
-      </article>
-      <article class="card">
-        <h3>Revisions</h3>
-        <p>The specified luminaire is gone and the budget just dropped. How much of the scheme do you rebuild?</p>
-      </article>
-    </div>
-    <p class="muted">We want to learn which of these costs you more, and whether a tool like LUMEN would help with either.</p>
-  </section>
-
-  <section id="how">
-    <h2>How LUMEN would work in practice</h2>
-    <ol class="how steps">
-      <li>You supply the brief, room geometry and requirements, including any fixtures or positions that must stay.</li>
-      <li>LUMEN proposes technical parameters for the design intentions it supports. You approve them and settle any ambiguities before anything is generated.</li>
-      <li>It explores products, quantities, positions and orientations together, using real luminaires with manufacturer photometric data.</li>
-      <li>You receive alternatives with layout, calculated performance and estimated installation cost. Creative direction and final judgement stay with you.</li>
-    </ol>
-  </section>
-
-  <section>
-    <div class="note">
-      <p><strong>Where LUMEN stands today</strong></p>
-      <p>LUMEN is at validation stage. The first prototype will cover room-scale indoor electric lighting, using supplied geometry and a controlled product catalogue. Open-ended brief interpretation, daylight optimisation, whole-building energy assessment and production-level BIM integration are outside that first scope. Technical performance, workflow benefit and commercial terms are still to be developed and evaluated.</p>
+  <!-- The loop -->
+  <section class="section" aria-labelledby="loop-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">The loop every lighting designer knows</p>
+        <h2 id="loop-h" class="reveal d1">Pick. Place. Calculate.<br>Miss, and start again.</h2>
+        <p class="lead reveal d2">And every client change, discontinued product or budget cut sends you round again.</p>
+      </div>
+      <div class="trio">
+        <article class="tile reveal">
+          <h3>First designs</h3>
+          <p>How long does it take you to turn “warm, calm, not too bright” into lux levels, products and positions?</p>
+        </article>
+        <article class="tile reveal d1">
+          <h3>Revisions</h3>
+          <p>The specified luminaire is gone and the budget just dropped. How much of the scheme do you rebuild?</p>
+        </article>
+        <article class="tile reveal d2">
+          <h3>Refurbishments</h3>
+          <p>Existing fittings, ceiling grids and service zones that cannot move. How long until the new products work around them?</p>
+        </article>
+      </div>
+      <p class="aside reveal">We want to learn which of these costs you most, and whether a tool like LUMEN would help.</p>
     </div>
   </section>
 
-  <section class="band">
-    <h2>Help us shape it</h2>
-    <p>About five minutes of questions on how you handle briefs, first designs and revisions, and what you think of our approach. If LUMEN looks relevant to your practice, you can then sign a short letter of intent that does not commit you to anything.</p>
-    <p class="muted small">Your answers stay on your device until you choose to email them to us.</p>
-    <a class="btn" href="../lumen-form/">Start the questionnaire</a>
+  <!-- The insight -->
+  <section class="section night" aria-labelledby="why-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">Why it is hard</p>
+        <h2 id="why-h" class="reveal d1">The product and its position can’t be chosen separately.</h2>
+        <p class="lead reveal d2">A new fitting spreads light differently and breaks the layout; a new layout changes which fitting works, especially in rooms with fixed obstacles. Most tools fix the fitting first and place it on a regular grid, so designers resolve the rest by hand. LUMEN decides both together.</p>
+      </div>
+      <p class="aside kicker reveal">What LUMEN is being built to do</p>
+      <div class="trio dark">
+        <article class="tile reveal">
+          <h3>One search, not two steps</h3>
+          <p>It chooses product, quantity, position and aiming in one search, and respects fixtures and zones that must stay.</p>
+        </article>
+        <article class="tile reveal d1">
+          <h3>Several manufacturers</h3>
+          <p>A neutral catalogue across brands, using each manufacturer’s measured light data, not generic light sources.</p>
+        </article>
+        <article class="tile reveal d2">
+          <h3>Checked twice</h3>
+          <p>Every option is verified with a second, independent calculation before you see it, against targets set by you and the lighting standard.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works: overview loop, then a pinned scroll story -->
+  <section id="how" class="section alt" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">How LUMEN would work in practice</p>
+        <h2 id="how-h" class="reveal d1">LUMEN runs the loop.<br>You make the calls.</h2>
+      </div>
+      <figure class="loop reveal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 272" class="lumen-loop lumen-loop-wide" role="img" aria-labelledby="lumen-loop-title lumen-loop-desc" font-family="system-ui, sans-serif">
+  <title id="lumen-loop-title">How LUMEN works: brief, search, check, designer chooses</title>
+  <desc id="lumen-loop-desc">The designer writes a brief. LUMEN searches real luminaires and layouts, checks every option against the brief with a lighting calculation, and shows the designer a few options to choose from. If none fits, the designer revises the brief and the loop runs again.</desc>
+  <defs>
+    <marker id="lumen-loop-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- 1 Brief -->
+  <g class="step" transform="translate(20 28)">
+    <rect class="box" width="190" height="124" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="50" font-size="21" font-weight="600" fill="currentColor">Brief</text>
+    <text class="sub" font-size="14" fill="currentColor" opacity="0.75"><tspan x="16" y="78">Room, light levels,</tspan><tspan x="16" y="97">budget and style</tspan></text>
+  </g>
+
+  <!-- 2 Search -->
+  <g class="step" transform="translate(250 28)">
+    <rect class="box" width="190" height="124" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="50" font-size="21" font-weight="600" fill="currentColor">Search</text>
+    <text class="sub" font-size="14" fill="currentColor" opacity="0.75"><tspan x="16" y="78">Real products ×</tspan><tspan x="16" y="97">layouts × heights</tspan></text>
+  </g>
+
+  <!-- 3 Check -->
+  <g class="step" transform="translate(480 28)">
+    <rect class="box" width="190" height="124" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="50" font-size="21" font-weight="600" fill="currentColor">Check</text>
+    <text class="sub" font-size="14" fill="currentColor" opacity="0.75"><tspan x="16" y="78">Every option calculated</tspan><tspan x="16" y="97">against the brief</tspan></text>
+  </g>
+
+  <!-- 4 Designer chooses (accent: the human decision) -->
+  <g class="step step-accent" transform="translate(710 28)">
+    <rect class="box box-accent" width="190" height="124" rx="4" fill="none" stroke="#B27500" stroke-width="2"/>
+    <rect class="accent-bar" width="190" height="4" fill="#E3A21A"/>
+    <text class="label" x="16" y="50" font-size="19" font-weight="600" fill="currentColor">Designer chooses</text>
+    <text class="sub" font-size="14" fill="currentColor" opacity="0.75"><tspan x="16" y="78">Compares a few checked</tspan><tspan x="16" y="97">options, picks one</tspan></text>
+  </g>
+
+  <!-- forward arrows -->
+  <g class="arrows" fill="none" stroke="currentColor" stroke-width="1.5">
+    <line class="arrow" x1="212" y1="90" x2="246" y2="90" marker-end="url(#lumen-loop-head)"/>
+    <line class="arrow" x1="442" y1="90" x2="476" y2="90" marker-end="url(#lumen-loop-head)"/>
+    <line class="arrow" x1="672" y1="90" x2="706" y2="90" marker-end="url(#lumen-loop-head)"/>
+  </g>
+
+  <!-- return loop: revise the brief -->
+  <path class="arrow arrow-return" d="M805,154 V206 Q805,214 797,214 H123 Q115,214 115,206 V158" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#lumen-loop-head)"/>
+  <text class="sub return-label" x="460" y="244" font-size="14" text-anchor="middle" fill="currentColor" opacity="0.75">Nothing fits? Adjust the brief and run the loop again.</text>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 560" class="lumen-loop lumen-loop-narrow" role="img" aria-labelledby="lumen-loopn-title lumen-loopn-desc" font-family="system-ui, sans-serif">
+  <title id="lumen-loopn-title">How LUMEN works: brief, search, check, designer chooses</title>
+  <desc id="lumen-loopn-desc">The designer writes a brief. LUMEN searches real luminaires and layouts, checks every option against the brief with a lighting calculation, and shows the designer a few options to choose from. If none fits, the designer revises the brief and the loop runs again.</desc>
+  <defs>
+    <marker id="lumen-loopn-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- 1 Brief -->
+  <g class="step" transform="translate(4 4)">
+    <rect class="box" width="270" height="96" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="31" font-size="20" font-weight="600" fill="currentColor">Brief</text>
+    <text class="sub" font-size="15" fill="currentColor" opacity="0.75"><tspan x="16" y="60">Room, light levels,</tspan><tspan x="16" y="80">budget and style</tspan></text>
+  </g>
+  <line class="arrow" x1="139" y1="102" x2="139" y2="134" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#lumen-loopn-head)"/>
+
+  <!-- 2 Search -->
+  <g class="step" transform="translate(4 138)">
+    <rect class="box" width="270" height="96" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="31" font-size="20" font-weight="600" fill="currentColor">Search</text>
+    <text class="sub" font-size="15" fill="currentColor" opacity="0.75"><tspan x="16" y="60">Real products ×</tspan><tspan x="16" y="80">layouts × heights</tspan></text>
+  </g>
+  <line class="arrow" x1="139" y1="236" x2="139" y2="268" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#lumen-loopn-head)"/>
+
+  <!-- 3 Check -->
+  <g class="step" transform="translate(4 272)">
+    <rect class="box" width="270" height="96" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <text class="label" x="16" y="31" font-size="20" font-weight="600" fill="currentColor">Check</text>
+    <text class="sub" font-size="15" fill="currentColor" opacity="0.75"><tspan x="16" y="60">Every option calculated</tspan><tspan x="16" y="80">against the brief</tspan></text>
+  </g>
+  <line class="arrow" x1="139" y1="370" x2="139" y2="402" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#lumen-loopn-head)"/>
+
+  <!-- 4 Designer chooses (accent) -->
+  <g class="step step-accent" transform="translate(4 406)">
+    <rect class="box box-accent" width="270" height="96" rx="4" fill="none" stroke="#B27500" stroke-width="2"/>
+    <rect class="accent-bar" width="270" height="4" fill="#E3A21A"/>
+    <text class="label" x="16" y="31" font-size="20" font-weight="600" fill="currentColor">Designer chooses</text>
+    <text class="sub" font-size="15" fill="currentColor" opacity="0.75"><tspan x="16" y="60">Compares a few checked</tspan><tspan x="16" y="80">options, picks one</tspan></text>
+  </g>
+
+  <!-- return loop up the right-hand side -->
+  <path class="arrow arrow-return" d="M276,454 H310 Q318,454 318,446 V60 Q318,52 310,52 H281" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#lumen-loopn-head)"/>
+  <text class="sub return-label" font-size="14" fill="currentColor" opacity="0.75" text-anchor="middle"><tspan x="170" y="532">Nothing fits? Adjust the brief</tspan><tspan x="170" y="551">and run the loop again.</tspan></text>
+</svg>
+      </figure>
+
+      <div class="scrolly">
+        <div class="stage">
+          <div class="stage-box">
+            <img class="layer is-on" data-step="1" src="img/option-a-plan.jpg" srcset="img/option-a-plan.jpg 1280w, img/option-a-plan-2560.jpg 2560w" sizes="(max-width: 860px) 100vw, 680px" width="1280" height="1007" alt="The classroom seen from above with the ceiling removed: the room geometry LUMEN works from.">
+            <div class="layer targets-layer" data-step="2">
+              <div class="targets" role="img" aria-label="The classroom brief as technical targets, approved by the designer: average at least 300 lux on the work plane, uniformity at least 0.5.">
+                <p class="t-head">Targets for this room</p>
+                <dl>
+                  <div><dt>Room</dt><dd>6.0 × 7.7 m, ceiling 2.9 m</dd></div>
+                  <div><dt>Average on the work plane</dt><dd>≥ 300 lx</dd></div>
+                  <div><dt>Uniformity</dt><dd>≥ 0.5</dd></div>
+                </dl>
+                <p class="t-ok">Approved by you</p>
+              </div>
+            </div>
+            <div class="layer polar-layer" data-step="3"><svg class="polar" id="polar" viewBox="-112 -108 224 220" role="img" aria-label="A luminaire's light distribution, the kind of manufacturer photometric data LUMEN works with."></svg></div>
+            <img class="layer" data-step="4" src="img/option-a-front.jpg" srcset="img/option-a-front.jpg 1280w, img/option-a-front-2560.jpg 2560w" sizes="(max-width: 860px) 100vw, 680px" width="1280" height="720" alt="One of the resulting options: the classroom rendered under its lighting layout." loading="lazy">
+          </div>
+        </div>
+        <ol class="beats">
+          <li class="beat" data-step="1">
+            <p class="eyebrow">Step 1 · The brief</p>
+            <h3>You describe the room.</h3>
+            <p>You supply the brief, room geometry and requirements, including any fixtures or positions that must stay.</p>
+          </li>
+          <li class="beat" data-step="2">
+            <p class="eyebrow">Step 2 · Targets</p>
+            <h3>Nothing runs until you agree.</h3>
+            <p>LUMEN proposes technical parameters for the design intentions it supports. You approve them and settle any ambiguities before anything is generated.</p>
+          </li>
+          <li class="beat" data-step="3">
+            <p class="eyebrow">Step 3 · Search</p>
+            <h3>The search does the iterating.</h3>
+            <p>It explores products, quantities, positions and orientations together, using real luminaires with manufacturer photometric data.</p>
+          </li>
+          <li class="beat" data-step="4">
+            <p class="eyebrow">Step 4 · Options</p>
+            <h3>You pick one.</h3>
+            <p>You receive alternatives with layout, calculated performance and estimated installation cost. Creative direction and final judgement stay with you.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Options -->
+  <section id="options" class="section night" aria-labelledby="opt-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">Mock-up of the result screen</p>
+        <h2 id="opt-h" class="reveal d1">Three answers.<br>You choose.</h2>
+        <p class="lead reveal d2">Each option with its calculated performance and a true-to-life view. Brief: classroom, 6.0 × 7.7 m, ceiling 2.9 m, at least 300 lx average on the work plane, uniformity at least 0.5.</p>
+      </div>
+      <div class="viewer reveal">
+        <div class="seg" role="group" aria-label="Option">
+          <button type="button" data-opt="a" aria-pressed="true">Option A</button>
+          <button type="button" data-opt="b" aria-pressed="false">Option B</button>
+          <button type="button" data-opt="c" aria-pressed="false">Option C</button>
+        </div>
+        <div class="viewer-grid">
+          <figure class="view">
+            <img id="opt-img" src="img/option-a-front.jpg" width="1280" height="720" alt="Option A, front view of the rendered classroom.">
+            <div class="seg small" role="group" aria-label="View">
+              <button type="button" data-view="front" aria-pressed="true">Front</button>
+              <button type="button" data-view="back" aria-pressed="false">Back</button>
+              <button type="button" data-view="plan" aria-pressed="false">From above</button>
+            </div>
+          </figure>
+          <div class="facts" aria-live="polite">
+            <p class="tag" id="opt-tag">Brightest</p>
+            <p class="status ok" id="opt-status">Meets the brief</p>
+            <p class="what" id="opt-what">30 × pendant, 636 lm</p>
+            <p class="prod" id="opt-prod">Cooper Halo RL706830 · hung at 1.9 m</p>
+            <dl>
+              <div><dt>Average</dt><dd id="opt-avg">471 lx</dd></div>
+              <div><dt>Uniformity</dt><dd id="opt-uni">0.55</dd></div>
+              <div><dt>Power</dt><dd id="opt-pow">414 W</dd></div>
+              <div><dt>Energy</dt><dd id="opt-en">1035 kWh/yr</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <p class="fine reveal">Mock-up of the planned result screen. Figures are a direct-light calculation for this classroom; “needs review” marks a result within the checker’s margin of a limit. Views are rendered in Blender with each product’s photometry and no daylight, for presentation rather than measurement. Classroom scene by Christophe Seux (CC0).</p>
+    </div>
+  </section>
+
+  <!-- Status and progress -->
+  <section class="section" aria-labelledby="now-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">Where LUMEN stands today</p>
+        <h2 id="now-h" class="reveal d1">Validating first.<br>Building next.</h2>
+      </div>
+      <p class="lead prose reveal">LUMEN is at validation stage. The first prototype will cover room-scale indoor electric lighting, using supplied geometry and a controlled product catalogue. Open-ended brief interpretation, daylight optimisation, whole-building energy assessment and production-level BIM integration are outside that first scope. Technical performance, workflow benefit and commercial terms are still to be developed and evaluated.</p>
+      <dl class="stats progress">
+        <div class="reveal"><dt>conversations and interviews with researchers and practitioners</dt><dd>15+</dd></div>
+        <div class="reveal d1"><dt>practitioners have completed the questionnaire</dt><dd>5</dd></div>
+        <div class="reveal d2"><dt>in the Catalyst60 programme of EIT Culture &amp; Creativity</dt><dd>Sep 2026</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section id="team" class="section alt" aria-labelledby="team-h">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="eyebrow reveal">Who is building LUMEN</p>
+        <h2 id="team-h" class="reveal d1">Computational design<br>meets lighting practice.</h2>
+      </div>
+      <div class="pair">
+        <article class="tile person reveal">
+          <h3>Manas Bhargava</h3>
+          <p class="role">Co-founder · technical lead</p>
+          <p>PhD in computational design from the Institute of Science and Technology Austria. His research turns design targets into buildable designs under real constraints, including <a href="../publications/2023/PCBend/">PCBend</a> (SIGGRAPH 2023), 3D LED lighting displays folded from flat circuit boards.</p>
+          <p class="links"><a href="../">Website</a> · <a href="https://www.linkedin.com/in/manas-bhargava-b36463121/">LinkedIn</a></p>
+        </article>
+        <article class="tile person reveal d1">
+          <h3>Thomas Gasser</h3>
+          <p class="role">Co-founder · lighting and commercial lead</p>
+          <p>Lighting designer in Vienna for 8 years, with more than 300 projects realised, from single rooms to whole office and industrial floors, in new buildings and refurbishments.</p>
+          <p class="links"><a href="https://www.linkedin.com/in/thomas-gasser-570b7a96/">LinkedIn</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing call to action -->
+  <section class="section" aria-labelledby="ask-h">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2 id="ask-h">Help us shape it.</h2>
+        <p class="lead">We are looking for independent lighting designers and small practices to test LUMEN as design partners. About five minutes of questions on how you handle briefs, first designs and revisions, and what you think of our approach. If LUMEN looks relevant to your practice, you can then sign a short letter of intent that does not commit you to anything.</p>
+        <div class="links3">
+          <a href="../lumen-form/"><strong>Questionnaire</strong><span>Five minutes on how you design and revise schemes.</span></a>
+          <a href="../lumen-form/"><strong>Letter of intent</strong><span>Optional and non-binding, at the end of the questionnaire.</span></a>
+          <a href="mailto:manas.16.bhargava@gmail.com"><strong>Email us</strong><span>manas.16.bhargava@gmail.com</span></a>
+        </div>
+        <p class="fine">Your answers stay on your device until you choose to email them to us.</p>
+      </div>
+    </div>
   </section>
 </main>
 
 <footer>
-  <p>Questions? Email <a href="mailto:manas.16.bhargava@gmail.com">manas.16.bhargava@gmail.com</a>.</p>
-  <p>This page collects no data and uses no analytics. It is hosted on GitHub Pages and loads fonts from Google Fonts. See the privacy notice at the bottom of the <a href="../lumen-form/">questionnaire</a> for how responses are handled.</p>
+  <div class="wrap">
+    <p>Questions? Email <a href="mailto:manas.16.bhargava@gmail.com">manas.16.bhargava@gmail.com</a>.</p>
+    <p>This page collects no data and uses no analytics. It is hosted on GitHub Pages and loads fonts from Google Fonts. See the privacy notice at the bottom of the <a href="../lumen-form/">questionnaire</a> for how responses are handled.</p>
+  </div>
 </footer>
 <script src="landing.js"></script>
 </body>

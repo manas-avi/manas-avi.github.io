@@ -1,0 +1,8 @@
+---
+layout: null
+sitemap: false
+---
+User-agent: *
+Disallow: /lumen/img/
+
+Sitemap: {{ "/sitemap.xml" | absolute_url }}
