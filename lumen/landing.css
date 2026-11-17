@@ -163,6 +163,8 @@ img.layer[data-step="2"]{object-fit:contain;background:#FFFFFF;padding:4%}
 .cta-band{border-radius:24px;border:1px solid var(--line);padding:clamp(32px,6vw,72px) clamp(20px,5vw,64px);text-align:center;
   background:radial-gradient(ellipse 80% 70% at 50% 0%,color-mix(in srgb,var(--lobe) 22%,transparent),transparent 70%),var(--surface)}
 .cta-band .lead{margin:1.2rem auto 0}
+.cta-band .ready{margin:clamp(24px,3.5vw,36px) auto 0;max-width:none;font-weight:600;font-size:clamp(1.4rem,2.6vw,2rem);line-height:1.25;letter-spacing:-.015em;text-wrap:balance}
+.cta-band .ready span{display:block}
 .links3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:clamp(28px,4vw,44px);text-align:left}
 .links3 a{display:flex;flex-direction:column;gap:.35rem;text-decoration:none;border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem 1.3rem;background:var(--paper);transition:border-color .2s,transform .2s var(--ease)}
 .links3 a:hover{border-color:var(--lobe-line);transform:translateY(-2px)}
