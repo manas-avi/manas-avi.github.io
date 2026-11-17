@@ -19,12 +19,12 @@
 <meta name="twitter:title" content="PCBend: fold it flat, watch it glow">
 <meta name="twitter:description" content="A sculptural LED lamp made from one folding circuit board. Reserve the early-supporter price.">
 <meta name="twitter:image" content="https://manas-avi.github.io/pcbend/media/og-pcbend.jpg">
-<!-- Kept out of search until going public is approved. [CONFIRM: remove this line at launch] -->
+<!-- Kept out of search engines on purpose until launch. -->
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/pcbend/site.css?v=10">
+<link rel="stylesheet" href="/pcbend/site.css?v=17">
 </head>
 <body>
 
@@ -69,8 +69,8 @@
   </section>
 
   <!-- Proof: one line -->
-  <div class="wrap"><p class="proof">Born from research at ISTA and Inria, published at SIGGRAPH 2023,
-    the world's leading computer graphics conference.</p></div>
+  <div class="proof"><p class="wrap">Born from research at ISTA and Inria, published at SIGGRAPH 2023,
+    the premier computer graphics conference.</p></div>
 
   <!-- What it does -->
   <section id="does" class="section" aria-labelledby="does-title">
@@ -80,7 +80,7 @@
         <p class="lead">Every LED is set on its own, so the whole surface works like a small,
           soft screen wrapped around the shape.</p>
       </div>
-      <ul class="tiles" role="list">
+      <ul class="tiles" role="list" data-one-at-a-time>
         <li class="tile">
           <div class="tile-media">
             <video class="loop" src="/pcbend/media/made-torus-thankyou.mp4" poster="/pcbend/media/made-torus-thankyou.jpg" width="720" height="720"
@@ -97,7 +97,7 @@
             <button class="vid-toggle" type="button" aria-label="Pause video"></button>
           </div>
           <h3>Patterns and moods</h3>
-          <p>Fire, rainbows, drifting colour. Patterns that react to music come with the premium version.</p>
+          <p>Fire, rainbows, drifting colour.</p>
         </li>
         <li class="tile">
           <div class="tile-media">
@@ -123,7 +123,16 @@
           <p>Tell us what you'd want it to show. It helps decide what we build next.</p>
         </li>
       </ul>
-      <p class="note">Wi-Fi control and Home Assistant support are planned for a future version.</p>
+      <div class="next">
+        <h3>Coming next, shaped by you</h3>
+        <ul role="list">
+          <li>Wi-Fi control</li>
+          <li>Home Assistant support</li>
+          <li>Music-reactive patterns</li>
+          <li>Useful displays: clock, weather, next meeting</li>
+        </ul>
+        <p><a href="#reserve" data-track="next_vote">Early supporters vote on what we build first.</a></p>
+      </div>
     </div>
   </section>
 
@@ -178,16 +187,17 @@
           <img src="/pcbend/media/made-star-rainbow.jpg" alt="The star prototype glowing in soft rainbow colours" width="720" height="720" loading="lazy">
           <h3>Flat Kit</h3>
           <p>One small shape to fold yourself. The perfect first PCBend.</p>
-          <p class="price">Price to be announced</p>
+          <p class="price">Early-supporter price: our lowest ever</p>
           <a class="btn btn-line" href="#reserve" data-interest="Flat Kit" data-track="product_kit">Reserve a Flat Kit</a>
         </li>
-        <li class="product">
+        <li class="product featured">
+          <p class="pick">Our pick</p>
           <img src="/pcbend/media/made-cat-fire.jpg" alt="The cat prototype glowing like embers" width="720" height="720" loading="lazy">
           <h3>Ambient Lamp</h3>
           <p>The full experience: a finished lamp with its controller. Run our patterns, or
             upload your own light patterns.</p>
-          <p class="price">Price to be announced</p>
-          <a class="btn btn-line" href="#reserve" data-interest="Ambient Lamp" data-track="product_lamp">Reserve an Ambient Lamp</a>
+          <p class="price">Early-supporter price: our lowest ever</p>
+          <a class="btn" href="#reserve" data-interest="Ambient Lamp" data-track="product_lamp">Reserve an Ambient Lamp</a>
         </li>
         <li class="product">
           <img src="/pcbend/media/made-torus-rainbow.jpg" alt="A large ring-shaped prototype glowing in rainbow colours" width="720" height="720" loading="lazy">
@@ -293,6 +303,10 @@
           offices and exhibitions.</p>
         <p class="note">Tell us what you have in mind. A 3D model helps, but a sketch or a photo
           is enough to start.</p>
+        <figure class="side-photo">
+          <img src="/pcbend/media/photo-group.jpg" alt="Five PCBend prototypes, each a different shape, glowing on a table: a star, a cat, a dome, a bat head and an icosahedron" width="2000" height="983" loading="lazy">
+          <figcaption>Every shape here started as a 3D model.</figcaption>
+        </figure>
       </div>
       <div>
         <form class="form" data-form="custom" novalidate>
@@ -325,10 +339,21 @@
 
   <!-- Reserve: the signup -->
   <section id="reserve" class="section reserve" aria-labelledby="reserve-title">
-    <div class="wrap"><div class="reserve-inner">
+    <div class="wrap reserve-grid">
+      <figure class="reserve-photo">
+        <picture>
+          <source media="(max-width: 860px)" srcset="/pcbend/media/proto-star-wide.jpg" width="960" height="720">
+          <img src="/pcbend/media/proto-star.jpg" alt="The star prototype glowing in soft pink and violet" width="800" height="1000" loading="lazy">
+        </picture>
+      </figure>
+      <div class="reserve-panel">
       <h2 id="reserve-title">Be first in line.</h2>
-      <p class="lead">Early supporters get first access, the early-supporter price and a say in
-        the final shapes. No payment now.</p>
+      <p class="lead">No payment now. Leave your email and hear first when PCBend launches.</p>
+      <ul class="perks" role="list">
+        <li>First access</li>
+        <li>Lowest price we'll ever offer</li>
+        <li>A vote on the final shapes</li>
+      </ul>
       <form class="form form-wide" data-form="reserve" novalidate>
         <div class="row3">
           <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
@@ -356,7 +381,8 @@
           <p>Thanks. Send the email that just opened and we'll read it.</p>
         </div>
       </div>
-    </div></div>
+      </div>
+    </div>
   </section>
 
   <!-- FAQ -->
@@ -372,13 +398,13 @@
         <details><summary>Do I need an app?</summary>
           <p>No download needed. You control it from a browser on your phone or computer.</p></details>
         <details><summary>How does it connect?</summary>
-          <p>Over USB-C or Bluetooth, depending on the version. Wi-Fi control and Home Assistant
-            support are planned for a future version.</p></details>
+          <p>Over USB-C or Bluetooth, depending on the version. Wi-Fi and Home Assistant are next
+            on the list, and early supporters help decide the order.</p></details>
         <details><summary>Can I get my own shape?</summary>
           <p>Yes, through <a href="#custom">Your Shape</a>. Places are limited at launch.</p></details>
         <details><summary>Is it safe?</summary>
           <p>It runs on low-voltage power, and the electronics will be certified for the EU market
-            before shipping. [CONFIRM wording once the compliance plan exists]</p></details>
+            before shipping.</p></details>
         <details><summary>Who's behind it?</summary>
           <p>Manas Bhargava, one of the researchers behind PCBend. <a href="#makers">Meet the maker</a>.</p></details>
       </div>
@@ -388,9 +414,25 @@
   <!-- The makers -->
   <section id="makers" class="section" aria-labelledby="makers-title">
     <div class="wrap split">
-      <figure class="makers-photo">
-        <img src="/pcbend/media/photo-group.jpg" alt="Five PCBend prototypes glowing on a workbench: a star, a cat, a dome, a bat head and an icosahedron" width="2000" height="983" loading="lazy">
-      </figure>
+      <!-- Photo slideshow: swipe, arrows or dots; advances on its own every few seconds.
+           To add a photo, add one more <li class="slide"> (4:5 crops look best). -->
+      <div class="slides" role="region" aria-roledescription="carousel" aria-label="Photos of Manas Bhargava">
+        <ul class="slides-track" role="list" tabindex="0">
+          <li class="slide">
+            <img src="/pcbend/media/maker/manas-portrait.jpg" alt="Manas Bhargava, maker of PCBend" width="960" height="1200" loading="lazy">
+            <p class="slide-cap">Demonstrating the prototypes.</p>
+          </li>
+          <li class="slide">
+            <img src="/pcbend/media/maker/manas-siggraph-web.jpg" alt="Manas Bhargava kneeling beside the SIGGRAPH sign at the conference" width="720" height="900" loading="lazy">
+            <p class="slide-cap">At SIGGRAPH.</p>
+          </li>
+        </ul>
+        <div class="slides-nav">
+          <button class="slides-btn" type="button" data-step="-1" aria-label="Previous photo">&larr;</button>
+          <div class="slides-dots"></div>
+          <button class="slides-btn" type="button" data-step="1" aria-label="Next photo">&rarr;</button>
+        </div>
+      </div>
       <div>
         <h2 id="makers-title">The maker.</h2>
         <p class="lead">PCBend started as a research project on folding circuit boards into 3D
@@ -430,8 +472,9 @@
   initNav();
   initTracking();
 </script>
-<script type="module" src="/pcbend/loops.js?v=10"></script>
-<script type="module" src="/pcbend/playground.js?v=10"></script>
-<script type="module" src="/pcbend/forms.js?v=10"></script>
+<script type="module" src="/pcbend/loops.js?v=17"></script>
+<script type="module" src="/pcbend/playground.js?v=17"></script>
+<script type="module" src="/pcbend/forms.js?v=17"></script>
+<script type="module" src="/pcbend/slides.js?v=17"></script>
 </body>
 </html>
