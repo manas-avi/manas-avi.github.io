@@ -49,6 +49,8 @@ exclude:
   - vendor/gems/
   - vendor/ruby/
   - lumen-form/README.md
+  # Developer scripts (and the viewer patch) have no reason to be on the live site.
+  - script/
 
 defaults:
   - scope:
@@ -62,6 +64,13 @@ defaults:
       sitemap: false
   - scope:
       path: "lumen"
+    values:
+      sitemap: false
+  # pcbend/ is the PCBend pre-launch page: published but unlisted. Every page in it
+  # carries noindex; it stays out of sitemap.xml and nothing on the site links to it.
+  # No robots.txt Disallow: that would hide the noindex tag from crawlers.
+  - scope:
+      path: "pcbend"
     values:
       sitemap: false
 
