@@ -844,3 +844,144 @@ body.fold-active #cta-btn { bottom: 88px; }
   line-height: 1.5;
   color: var(--text-muted);
 }
+
+/* ── Start screen: shape picker ──
+   Replaces the old file drop. #dropzone keeps its id (app.js still owns it) but now
+   scrolls, because the grid can be taller than a phone screen. */
+#dropzone {
+  overflow-y: auto;
+  align-items: flex-start;
+  padding: clamp(24px, 6vh, 64px) 16px;
+}
+
+.dropzone-inner.picker {
+  border: 0;
+  padding: 0;
+  max-width: 980px;
+  width: 100%;
+  margin: auto;
+  gap: 12px;
+}
+
+.picker-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.picker .subtitle {
+  max-width: 34rem;
+  line-height: 1.5;
+}
+
+#shape-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.shape-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.shape-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.shape-open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 10px 8px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.shape-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: radial-gradient(circle at 50% 45%, rgba(108, 127, 255, 0.14), transparent 70%);
+  border-radius: 6px;
+}
+
+.shape-thumb:not([src]) { visibility: hidden; }
+
+.shape-name {
+  font-weight: 650;
+  text-transform: capitalize;
+  margin-top: 6px;
+}
+
+.shape-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.shape-variants {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+
+.shape-variant {
+  flex: 1;
+  padding: 8px 4px;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.shape-variant + .shape-variant { border-left: 1px solid var(--border); }
+.shape-variant:hover { color: var(--text); background: rgba(108, 127, 255, 0.12); }
+
+.shape-open:focus-visible,
+.shape-variant:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.picker-foot {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+}
+
+.picker-foot a { color: var(--accent); text-decoration: none; }
+.picker-foot a:hover { text-decoration: underline; }
+.picker-empty { color: var(--text-muted); grid-column: 1 / -1; }
+
+#import-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ── Embedded (?embed=1): the host page owns the controls ── */
+body.embed #fold-controls-panel,
+body.embed #cta-btn,
+body.embed #cta-modal,
+body.embed #fold-close-btn,
+body.embed:not(.embed-bar) #fold-anim-bar { display: none !important; }

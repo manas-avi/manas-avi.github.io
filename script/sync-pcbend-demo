@@ -11,7 +11,14 @@
 # machine-specific absolute paths and _harness.html is a test rig that Jekyll
 # would drop anyway (leading underscore).
 #
+# The /pcbend/ landing page drives this viewer through its "Landing-page hooks"
+# (?fold=, ?embed=1, postMessage) and links to its shape picker. Those were written
+# in this repo first and travel to the spin-off as script/pcbend-demo-landing.patch
+# (cd <spin-off> && git apply <this repo>/script/pcbend-demo-landing.patch). Until
+# the spin-off has them, this script refuses to sync rather than wipe them.
+#
 # Usage: script/sync-pcbend-demo [path-to-spin-off]
+#        FORCE=1 script/sync-pcbend-demo ...   sync anyway, breaking /pcbend/
 set -e
 
 # SRC="${1:-$HOME/Desktop/spin-off}"
@@ -29,10 +36,25 @@ test -f "$SRC/assets/manifest.json" || {
   exit 1
 }
 
+# Checked on the source, before anything is deleted: the app.js hooks and the
+# index.html elements they need (the picker grid, the hidden import section).
+missing=""
+grep -q 'Landing-page hooks' "$SRC/app.js"      || missing="$missing app.js:landing-page-hooks"
+grep -q 'id="shape-grid"' "$SRC/index.html"     || missing="$missing index.html:#shape-grid"
+grep -q 'id="import-section"' "$SRC/index.html" || missing="$missing index.html:#import-section"
+grep -q 'body.embed' "$SRC/style.css"           || missing="$missing style.css:embed-mode"
+if [ -n "$missing" ] && [ "${FORCE:-0}" != 1 ]; then
+  echo "refusing to sync: $SRC lacks what /pcbend/ needs:$missing" >&2
+  echo "apply script/pcbend-demo-landing.patch there first, or re-run with FORCE=1" >&2
+  exit 1
+fi
+
 rm -rf "$DEST"
 mkdir -p "$DEST"
 cp "$SRC/index.html" "$SRC/app.js" "$SRC/style.css" "$DEST/"
 cp -R "$SRC/assets" "$DEST/assets"
+
+[ -n "$missing" ] && echo "WARNING: FORCE=1 synced a viewer without:$missing -- /pcbend/ is broken" >&2
 
 echo "synced $(du -sh "$DEST" | cut -f1) -> ${DEST#"$(cd "$(dirname "$0")/.." && pwd)/"}"
 echo "folds: $(python3 -c "import json;print(', '.join(f['folder'] for f in json.load(open('$DEST/assets/manifest.json'))['folders']))")"

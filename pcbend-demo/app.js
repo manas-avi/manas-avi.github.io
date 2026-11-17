@@ -20,6 +20,17 @@ const meshStats     = document.getElementById('mesh-stats');
 const loadingEl     = document.getElementById('loading');
 const errorToast    = document.getElementById('error-toast');
 
+// ── Page options ──────────────────────────────────────────────────────────────
+// ?fold=<folder> opens a fold straight from a link, and ?embed=1 runs the fold
+// viewer without its panels inside another page, which then drives it with
+// postMessage (see "Landing-page hooks" near the end). The mesh import path is
+// off unless a local backend answers /api/config, or the link carries ?import.
+const PARAMS = new URLSearchParams(location.search);
+const EMBED  = PARAMS.get('embed') === '1';
+let importEnabled = PARAMS.has('import');
+if (EMBED) document.body.classList.add('embed');
+if (EMBED && PARAMS.get('bar') === '1') document.body.classList.add('embed-bar');
+
 // ── Three.js setup ────────────────────────────────────────────────────────────
 const scene    = new THREE.Scene();
 scene.background = new THREE.Color(0x0f0f1a);
@@ -261,6 +272,7 @@ function loadMesh(file) {
 // ── Drag & drop ───────────────────────────────────────────────────────────────
 dropzone.addEventListener('dragover', e => {
   e.preventDefault();
+  if (!importEnabled) return;
   dropzone.classList.add('drag-over');
 });
 
@@ -273,6 +285,7 @@ dropzone.addEventListener('dragleave', e => {
 dropzone.addEventListener('drop', e => {
   e.preventDefault();
   dropzone.classList.remove('drag-over');
+  if (!importEnabled) return;
   const file = e.dataTransfer.files[0];
   if (file) loadMesh(file);
 });
@@ -605,6 +618,13 @@ const SHAPE_VARIANTS = ['small', 'big'];
 const VARIANT_RE = new RegExp(`-(${SHAPE_VARIANTS.join('|')}|[\\d.]+)$`);
 
 // A folder called only 'big' keeps its whole name — otherwise the family is empty.
+// family/variant for a manifest entry: the manifest's own fields when it has them,
+// else split from the folder name (an older manifest carries neither).
+function folderMeta(entry) {
+  const split = splitVariant(entry.folder);
+  return { family: entry.family ?? split.family, variant: entry.variant ?? split.variant };
+}
+
 function splitVariant(folderName) {
   const name = String(folderName || '').trim().toLowerCase();
   const m = VARIANT_RE.exec(name);
@@ -686,7 +706,10 @@ let foldLastTime   = 0;
 // steps and the fold integrator both land on 1 exactly, but a hand-set t of 0.9999
 // from a debug hook should still count as closed.
 const LED_ON_T = 0.999;
-const ledsLit = () => foldT >= LED_ON_T;
+// ledsForced is the one exception, and only a host page sets it (the `lit` view flag in
+// the landing-page hooks): to show the wiring order on the flat board, before folding.
+let ledsForced = false;
+const ledsLit = () => foldT >= LED_ON_T || ledsForced;
 
 // The three base lights are module-level rather than locals of initFoldScene because
 // an environment preset has to be able to dim them: a "dark room" scene where the
@@ -718,6 +741,9 @@ function initFoldScene() {
   foldControls.dampingFactor  = 0.07;
   foldControls.minDistance    = 0.01;
   foldControls.maxDistance    = 5000;
+  foldControls.enableZoom     = !EMBED;
+  // A drag takes the camera back from any eased reframe still in flight.
+  foldControls.addEventListener('start', () => { camTween = null; });
 
   // Directional/ambient/hemisphere only: these are the light types whose contribution
   // is scale-invariant, which matters because the environment rig is a unit-sized
@@ -747,6 +773,8 @@ function startFoldRenderLoop() {
     let dt = Math.min(0.1, (now - foldLastTime) / 1000);
     foldLastTime = now;
     if (foldAnimating) advanceFold(dt*2);
+    else if (foldTween) advanceTween(now);
+    if (camTween) advanceCamTween(now);
     advanceSpin(dt);
     advanceEffect(dt);
     foldControls.update();
@@ -2282,7 +2310,8 @@ function ledContext(n) {
   // a half-open shell — neighbours across a seam that has not closed yet are missing,
   // and it would stay that way for the rest of the session. Rebuild once the fold
   // completes. Not on every fold step: this is the O(n²) part.
-  const folded = ledsLit();
+  // Geometry, not the lit gate: forced-on LEDs on a flat board are still a flat board.
+  const folded = foldT >= LED_ON_T;
   if (c.builtFor !== foldModel || (folded && !c.builtFolded)) {
     buildLedGraph(c);
     c.builtFolded = folded;
@@ -3862,15 +3891,28 @@ function teardownRig() {
 // fabrication view. A room is only meaningful around the folded object, which sits
 // in raw .off coordinates — so reframe when entering a scene, once, rather than
 // continuously (which would fight the user's orbit and pan the world during Play).
+// The three-quarter view every folded framing uses: the room's, the host page's
+// frame:'folded' and the picker thumbnails. FRAME_OFFSET is deliberately left
+// unnormalised (|v| ~ 0.995), since that is the distance the room framing was tuned at.
+const FRAME_OFFSET = new THREE.Vector3(0.62, 0.34, 0.70);
+const FRAME_DIR    = FRAME_OFFSET.clone().normalize();
+
+function foldedPose(fit) {
+  if (!fit) return null;
+  const dist = fit.S * 1.9;
+  return {
+    target: fit.center.clone(),
+    position: fit.center.clone().addScaledVector(FRAME_OFFSET, dist),
+    dist,
+  };
+}
+
 function frameForEnv() {
   if (!envFit || !foldCamera) return;
-  const { center, S } = envFit;
-  const dist = S * 1.9;
-  foldCamera.position.set(center.x + dist * 0.62,
-                          center.y + dist * 0.34,
-                          center.z + dist * 0.70);
-  foldControls.target.copy(center);
-  applyEnvClipping(dist);
+  const pose = foldedPose(envFit);
+  foldCamera.position.copy(pose.position);
+  foldControls.target.copy(pose.target);
+  applyEnvClipping(pose.dist);
   foldControls.update();
 }
 
@@ -4249,6 +4291,16 @@ function revealFolded() {
 
 // ── Load fold pair ────────────────────────────────────────────────────────────
 async function loadFoldViewer(folderName) {
+  // Two loads can overlap (a host message during a ?fold= load, a backend hand-off).
+  // Each await below is a point where a newer load may have started; from then on
+  // this one must not build, frame, report or clear anything, or it would apply the
+  // newer load's pending view to the wrong model.
+  const seq = ++foldLoadSeq;
+  const stale = () => seq !== foldLoadSeq;
+  foldLoading = true;
+  foldLoadingFolder = folderName;
+  foldTween = null;
+  camTween = null;
   foldLoadingEl.classList.remove('hidden');
   dropzone.classList.add('hidden');
   // The mesh viewer may be up when the backend hands a generated fold over, and
@@ -4269,6 +4321,7 @@ async function loadFoldViewer(folderName) {
       ledUrl ? grab(ledUrl) : Promise.resolve(null),
       mapUrl ? grab(mapUrl) : Promise.resolve(null),
     ]);
+    if (stale()) return;
 
     const off   = parseOFF(offText);
     const sheet = parseSheet(sheetText);
@@ -4368,6 +4421,7 @@ async function loadFoldViewer(folderName) {
     foldCamera.updateProjectionMatrix();
     foldControls.target.set(0, 0, 0);
     foldControls.update();
+    flatFrameDist = dist;
 
     // ---- UI
     foldFolderNameEl.textContent = folderName;
@@ -4415,13 +4469,25 @@ async function loadFoldViewer(folderName) {
       frameForEnv();
     }
 
+    if (stale()) return;
+    onFoldLoaded(folderName);
   } catch (err) {
+    if (stale()) return;
     console.error(err);
     showError(err.message);
+    // A failed load's view state belongs to it alone, not to whatever opens next.
+    pendingView = {};
     foldViewerEl.classList.add('hidden');
-    dropzone.classList.remove('hidden');
+    // Embedded, the picker would appear inside the host's stage: the host shows the
+    // failure itself, once it is told about it.
+    if (EMBED) notifyHost({ pcbendError: folderName, message: err.message });
+    else dropzone.classList.remove('hidden');
   } finally {
-    foldLoadingEl.classList.add('hidden');
+    if (!stale()) {
+      foldLoading = false;
+      foldLoadingFolder = null;
+      foldLoadingEl.classList.add('hidden');
+    }
   }
 }
 
@@ -4444,6 +4510,7 @@ async function refreshFolderPicker() {
   if (!foldFolderSelect || !foldFolderInput) return;   // no dropzone on this page
   await loadManifest();
   const folders = manifestFolders();
+  renderShapeGrid(folders);
   if (!folders.length) {
     foldFolderSelect.classList.add('hidden');
     foldFolderInput.classList.remove('hidden');
@@ -4459,9 +4526,7 @@ async function refreshFolderPicker() {
     // of a shape differ only by that suffix and sit next to each other in the list,
     // so it is the part worth setting apart. The manifest carries family/variant;
     // an older manifest without them is split here instead.
-    const split = splitVariant(entry.folder);
-    const family = entry.family ?? split.family;
-    const variant = entry.variant ?? split.variant;
+    const { family, variant } = folderMeta(entry);
     const name = variant ? `${family} · ${variant}` : family;
     option.textContent = entry.faces ? `${name} — ${entry.faces} faces` : name;
     foldFolderSelect.appendChild(option);
@@ -4491,6 +4556,9 @@ foldFolderInput.addEventListener('keydown', e => {
 
 foldCloseBtn.addEventListener('click', () => {
   foldAnimating = false;
+  foldTween = null;
+  ledsForced = false;
+  setFoldParam(null);
   foldPlayBtn.textContent = '▶ Play';
   foldViewerEl.classList.add('hidden');
   dropzone.classList.remove('hidden');
@@ -4503,6 +4571,7 @@ foldCloseBtn.addEventListener('click', () => {
 
 foldSlider.addEventListener('input', () => {
   foldAnimating = false;
+  foldTween = null;
   foldPlayBtn.textContent = '▶ Play';
   setFoldT(Number(foldSlider.value) / 100);
 });
@@ -5067,6 +5136,7 @@ async function probeBackend() {
   } catch {
     backend = null;          // no backend here; static mode
   }
+  if (backend) setImportEnabled(true);
   paintHint();
   if (backend?.ok) reattachJob();
 }
@@ -5290,8 +5360,357 @@ function renderJob(job) {
   }
 }
 
+// ── Landing-page hooks ────────────────────────────────────────────────────────
+// Three things the PCBend landing pages need from the viewer: open a fold from a
+// link, run chrome-less in an iframe, and take view changes from the host page.
+//
+// View state, from the query string or from a message, is a plain object:
+//   t (0..1, with ms > 0 to ease there), play, leds, hinges, chain, diffuser,
+//   spin, room, wireframe, lit (booleans; lit runs the LEDs before the board is
+//   closed), effect (an EFFECTS id), env (an ENVIRONMENTS id),
+//   frame ('folded' re-aims the camera at the closed shape, 'flat' at the sheet),
+//   zoom (with frame: > 1 moves in closer than the default framing),
+//   message (the text the 'text' effect scrolls, up to 120 characters),
+//   brightness (0..200, as the LED brightness slider) and speed (10..300, as the
+//   effect speed slider).
+// Messages are { pcbend: { fold?, ...state } } from the same origin only. One that
+// arrives while a fold is loading is merged and applied once the load lands.
+
+let foldLoading = false;
+let foldLoadSeq = 0;             // bumped per load; only the newest may finish
+let foldLoadingFolder = null;    // the folder that newest load is fetching
+let flatFrameDist = 0;           // the load-time camera distance onto the flat sheet
+let foldTween   = null;          // { from, to, start, ms } while easing foldT
+let pendingView = {};
+
+function setImportEnabled(on) {
+  importEnabled = on;
+  document.getElementById('import-section')?.classList.toggle('hidden', !on);
+}
+setImportEnabled(importEnabled);
+
+function startFoldTween(to, ms) {
+  foldTween = { from: foldT, to: Math.max(0, Math.min(1, to)), start: performance.now(), ms };
+}
+
+function advanceTween(now) {
+  const k = Math.min(1, (now - foldTween.start) / foldTween.ms);
+  const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;   // ease in-out
+  const { from, to } = foldTween;
+  if (k >= 1) foldTween = null;
+  setFoldT(from + (to - from) * e);
+}
+
+function viewFromParams(p) {
+  const v = {};
+  const bool = k => { if (p.has(k)) v[k] = p.get(k) !== '0' && p.get(k) !== 'false'; };
+  const num  = k => { if (p.has(k) && Number.isFinite(Number(p.get(k)))) v[k] = Number(p.get(k)); };
+  ['play', 'leds', 'hinges', 'chain', 'diffuser', 'spin', 'room', 'wireframe', 'lit'].forEach(bool);
+  ['t', 'ms', 'zoom', 'brightness', 'speed'].forEach(num);
+  for (const k of ['effect', 'env', 'frame', 'message']) if (p.has(k)) v[k] = p.get(k);
+  return v;
+}
+
+// A message can carry anything, so numbers are checked here as viewFromParams checks
+// query values: a NaN t would write NaN into every vertex buffer.
+const finite = x => (x == null || x === '' || !Number.isFinite(Number(x)) ? null : Number(x));
+
+function applyView(v) {
+  if (v.lit != null && !!v.lit !== ledsForced) { ledsForced = !!v.lit; uploadStrip(); }
+  // The message goes in before the effect, so switching to 'text' shows it at once.
+  if (v.message != null) setTextMessage(String(v.message).slice(0, 120));
+  if (v.effect != null) setEffect(String(v.effect));
+  // The sliders stay the one place these values live; both are read at use time.
+  const brightness = finite(v.brightness), speed = finite(v.speed);
+  if (brightness != null && foldBrightness) {
+    foldBrightness.value = String(Math.min(200, Math.max(0, brightness)));
+    uploadStrip();
+  }
+  if (speed != null && foldSpeed) foldSpeed.value = String(Math.min(300, Math.max(10, speed)));
+  if (v.leds != null) {
+    foldShowLeds = !!v.leds;
+    if (foldLedMesh) foldLedMesh.visible = foldShowLeds;
+  }
+  if (v.hinges != null) { foldShowHinges = !!v.hinges; applyHingeVisibility(); }
+  if (v.chain != null) {
+    foldShowChain = !!v.chain;
+    if (foldChainLines) foldChainLines.visible = foldShowChain;
+  }
+  // An explicit choice from the host page counts like a click: the end-of-sweep
+  // reveal must not switch these back on behind its back.
+  if (v.diffuser != null) { diffuserUserSet = true; setShowDiffuser(!!v.diffuser); }
+  if (v.spin != null) { spinUserSet = true; setSpinning(!!v.spin); }
+  if (v.room != null) {
+    envRigOn = !!v.room;
+    if (envRoot) envRoot.visible = envRigOn && envFade(foldT) > 0.001;
+  }
+  if (v.env != null && v.env !== envId) setEnvironment(String(v.env));
+  const t = finite(v.t), ms = finite(v.ms) ?? 0;
+  if (t != null) {
+    foldAnimating = false;
+    foldPlayBtn.textContent = '▶ Play';
+    if (ms > 0) startFoldTween(t, ms);
+    else { foldTween = null; setFoldT(t); }
+  }
+  if (v.play) {
+    foldTween = null;
+    foldAnimating = true;
+    foldPlayBtn.textContent = '⏸ Pause';
+    if (foldT >= 1) setFoldT(0);
+  }
+  if (v.wireframe != null) {
+    foldWireframeOn = !!v.wireframe;
+    foldWireframeBtn.textContent = `Wireframe: ${foldWireframeOn ? 'On' : 'Off'}`;
+    foldWireframeBtn.classList.toggle('active', foldWireframeOn);
+    if (foldPcbMesh) foldPcbMesh.material.wireframe = foldWireframeOn;
+  }
+  if (v.frame === 'folded' || v.frame === 'flat') frameTo(v.frame, ms, finite(v.zoom) ?? 1);
+  refreshToggles();
+}
+
+// Camera poses for the two ends of the fold. The flat sheet is centred on the local
+// origin in the z=0 plane, but the orientation fix (and spin) can tip it onto the
+// floor, so the view is taken along the sheet's world normal, leaned toward the usual
+// three-quarter direction so it reads as a board rather than a flat map. The folded
+// pose is frameForEnv()'s, measured directly so it works with no room too.
+
+function framePose(which) {
+  if (!foldModel || !foldGroup) return null;
+  foldGroup.updateMatrixWorld(true);
+  if (which === 'flat') {
+    const target = new THREE.Vector3(0, 0, 0).applyMatrix4(foldGroup.matrixWorld);
+    const n = new THREE.Vector3(0, 0, 1).transformDirection(foldGroup.matrixWorld);
+    // LEDs sit on +z; face whichever side of the board is nearer the usual view
+    if (n.dot(FRAME_DIR) < 0) n.negate();
+    const dir = n.multiplyScalar(1).addScaledVector(FRAME_DIR, 0.45).normalize();
+    const dist = (flatFrameDist || 1) * 0.92;
+    return { target, position: target.clone().addScaledVector(dir, dist), dist };
+  }
+  return foldedPose(measureFolded());
+}
+
+let camTween = null;             // { p0, t0, p1, t1, start, ms } while easing the camera
+
+// zoom > 1 moves the camera in from the default framing, which is sized to the bounding
+// sphere and so leaves a tall, narrow model small in a wide frame.
+function frameTo(which, ms = 0, zoom = 1) {
+  const pose = framePose(which);
+  if (!pose) return;
+  const z = Math.min(3, Math.max(0.5, zoom));
+  if (z !== 1) {
+    pose.position.sub(pose.target).divideScalar(z).add(pose.target);
+    pose.dist /= z;
+  }
+  applyEnvClipping(Math.max(pose.dist, foldCamera.position.distanceTo(foldControls.target)));
+  if (ms > 0) {
+    camTween = {
+      p0: foldCamera.position.clone(), t0: foldControls.target.clone(),
+      p1: pose.position, t1: pose.target, start: performance.now(), ms, dist: pose.dist,
+    };
+    return;
+  }
+  camTween = null;
+  foldCamera.position.copy(pose.position);
+  foldControls.target.copy(pose.target);
+  applyEnvClipping(pose.dist);
+  foldControls.update();
+}
+
+function advanceCamTween(now) {
+  const c = camTween;
+  const k = Math.min(1, (now - c.start) / c.ms);
+  const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  foldCamera.position.lerpVectors(c.p0, c.p1, e);
+  foldControls.target.lerpVectors(c.t0, c.t1, e);
+  if (k >= 1) { camTween = null; applyEnvClipping(c.dist); }
+}
+
+function notifyHost(msg) {
+  if (EMBED && window.parent !== window) window.parent.postMessage(msg, location.origin);
+}
+
+function onFoldLoaded(folderName) {
+  setFoldParam(folderName);
+  const v = pendingView;
+  pendingView = {};
+  applyView(v);
+  notifyHost({ pcbendLoaded: folderName });
+}
+
+// Keeps the address bar shareable: it names the fold on screen, or none. The view
+// params (t, lit, env…) were consumed by the load that read them, so they are
+// dropped rather than carried into the next shape someone opens.
+const KEPT_PARAMS = ['import'];
+function setFoldParam(folderName) {
+  if (EMBED) return;
+  const url = new URL(location.href);
+  for (const k of [...url.searchParams.keys()]) {
+    if (!KEPT_PARAMS.includes(k)) url.searchParams.delete(k);
+  }
+  if (folderName) url.searchParams.set('fold', folderName);
+  history.replaceState(null, '', url);
+}
+
+window.addEventListener('message', e => {
+  if (e.origin !== location.origin) return;
+  const msg = e.data?.pcbend;
+  if (!msg || typeof msg !== 'object') return;
+  const { fold, ...view } = msg;
+  // While loading, the fold that counts is the one being fetched (the name label is
+  // only written once a load lands), so a repeat of it does not start a second load.
+  const showing = foldLoading ? foldLoadingFolder : currentFoldFolder();
+  if (fold && String(fold) !== showing) {
+    pendingView = { ...pendingView, ...view };
+    loadFoldViewer(String(fold));
+  } else if (foldLoading || !foldModel) {
+    pendingView = { ...pendingView, ...view };
+  } else {
+    applyView(view);
+    // A host that asked for the fold already on screen still waits for an answer.
+    if (fold) notifyHost({ pcbendLoaded: showing });
+  }
+});
+
+// ---- the start screen's shape grid
+// One card per shape family, with one button per LED size. small/big name the LED
+// package: the small one packs several times as many LEDs onto the same board.
+const shapeGrid = document.getElementById('shape-grid');
+const VARIANT_LABEL = { small: 'Small LEDs', big: 'Large LEDs' };
+
+function renderShapeGrid(folders) {
+  if (!shapeGrid || EMBED) return;      // embedded, the picker is never shown
+  shapeGrid.textContent = '';
+  if (!folders.length) {
+    const p = document.createElement('p');
+    p.className = 'picker-empty';
+    p.textContent = 'No shapes found (assets/manifest.json is missing).';
+    shapeGrid.append(p);
+    return;
+  }
+  const families = new Map();
+  for (const entry of folders) {
+    const { family, variant } = folderMeta(entry);
+    if (!families.has(family)) families.set(family, []);
+    families.get(family).push({ ...entry, variant });
+  }
+  const thumbJobs = [];
+  for (const [family, entries] of families) {
+    // small first: it is the denser board, and the one the card itself opens
+    entries.sort((a, b) => (a.variant === 'small' ? -1 : 0) - (b.variant === 'small' ? -1 : 0));
+    const card = document.createElement('article');
+    card.className = 'shape-card';
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'shape-open';
+    open.addEventListener('click', () => loadFoldViewer(entries[0].folder));
+    const img = document.createElement('img');
+    img.alt = '';
+    img.className = 'shape-thumb';
+    const name = document.createElement('span');
+    name.className = 'shape-name';
+    name.textContent = family;
+    const meta = document.createElement('span');
+    meta.className = 'shape-meta';
+    meta.textContent = entries[0].faces ? `${entries[0].faces} faces` : '';
+    open.append(img, name, meta);
+
+    const variants = document.createElement('div');
+    variants.className = 'shape-variants';
+    for (const entry of entries) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'shape-variant';
+      b.textContent = VARIANT_LABEL[entry.variant] ?? (entry.variant || 'Open');
+      b.addEventListener('click', () => loadFoldViewer(entry.folder));
+      variants.append(b);
+    }
+    card.append(open, variants);
+    shapeGrid.append(card);
+    thumbJobs.push({ folder: entries[0].folder, img });
+  }
+  renderShapeThumbs(thumbJobs);
+}
+
+// Small stills of each folded shape, drawn once with a throwaway renderer so the grid
+// shows the shapes without loading a single fold. Purely decorative: a card whose
+// thumbnail fails just shows its name.
+const thumbCache = new Map();     // folder -> data URL, so a re-render reuses them
+
+async function renderShapeThumbs(jobs) {
+  for (const { folder, img } of jobs) if (thumbCache.has(folder)) img.src = thumbCache.get(folder);
+  jobs = jobs.filter(j => !thumbCache.has(j.folder));
+  if (!jobs.length) return;
+  // Fetched together, drawn one at a time through a single throwaway context.
+  const meshes = await Promise.all(jobs.map(async ({ folder }) => {
+    try {
+      const { offUrl } = await discoverFoldFiles(folder);
+      return parseOFF(await (await fetch(offUrl)).text());
+    } catch (err) {
+      console.warn('thumbnail failed for', folder, err);
+      return null;
+    }
+  }));
+  let r;
+  try {
+    r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  } catch { return; }
+  const size = 256;
+  r.setPixelRatio(1);
+  r.setSize(size, size);
+  const scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const key = new THREE.DirectionalLight(0xffffff, 1.6);
+  key.position.set(1, 2, 2);
+  const rim = new THREE.DirectionalLight(0x8899ff, 0.8);
+  rim.position.set(-2, 1, -1);
+  scene.add(key, rim);
+  const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 10000);
+
+  for (const [i, { folder, img }] of jobs.entries()) {
+    const off = meshes[i];
+    if (!off) continue;
+    try {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(off.vertices, 3));
+      geo.setIndex(new THREE.BufferAttribute(off.faces, 1));
+      const g = geo.toNonIndexed();
+      g.computeVertexNormals();
+      const o = defaultOrientFor(folder);
+      const group = new THREE.Group();
+      group.rotation.set(o.x * DEG, o.y * DEG, o.z * DEG, 'XYZ');
+      const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        color: 0x3a4266, roughness: 0.5, metalness: 0.15, flatShading: true, side: THREE.DoubleSide,
+      }));
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1),
+        new THREE.LineBasicMaterial({ color: 0xa8b0ff, transparent: true, opacity: 0.8 }));
+      group.add(mesh, edges);
+      scene.add(group);
+      const sphere = new THREE.Box3().setFromObject(group).getBoundingSphere(new THREE.Sphere());
+      const dist = sphere.radius / Math.sin((cam.fov / 2) * DEG) * 1.05;
+      cam.position.copy(sphere.center).addScaledVector(FRAME_DIR, dist);
+      cam.near = dist / 100; cam.far = dist * 10;
+      cam.lookAt(sphere.center);
+      cam.updateProjectionMatrix();
+      r.render(scene, cam);
+      img.src = r.domElement.toDataURL('image/png');
+      thumbCache.set(folder, img.src);
+      scene.remove(group);
+      geo.dispose(); g.dispose(); mesh.material.dispose(); edges.geometry.dispose(); edges.material.dispose();
+    } catch (err) {
+      console.warn('thumbnail failed for', folder, err);
+    }
+  }
+  r.dispose();
+  r.forceContextLoss();
+}
+
 probeBackend();
 refreshFolderPicker();
+if (PARAMS.get('fold')) {
+  pendingView = viewFromParams(PARAMS);
+  loadFoldViewer(PARAMS.get('fold'));
+}
 
 // ── Call to action: fold it yourself / feedback / contact ─────────────────────
 // A single button at the bottom centre of whichever viewer is up, opening a card
@@ -5302,7 +5721,7 @@ refreshFolderPicker();
 // the feedback button falls back to a mailto, so the page is never broken by not
 // having decided on a form yet.
 const FEEDBACK_FORM_URL = 'https://forms.gle/HdNidv7jum61hXZs5';
-const CONTACT_EMAIL     = 'manas161997@gmail.com';
+const CONTACT_EMAIL     = 'manas.16.bhargava@gmail.com';
 // Printable templates, from the unfolder's own output tree:
 //
 //   assets/unfold/<mesh>_unfold/<mesh>-unfold-fab.pdf
