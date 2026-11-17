@@ -10,7 +10,7 @@ authors:
   - name: Schreck, Camille
     affiliations: [2]
     url: https://schreckc.github.io/
-  - name: Friere, Marco
+  - name: Freire, Marco
     affiliations: [2]
     url: https://mfremer.github.io/
   - name: Hugron, Pierre-Alexandre
@@ -76,34 +76,14 @@ teaser:
     
   images:
   - url: teaser.png
-    alt: teaser
+    alt: Input meshes, their simplified versions and the resulting single-patch unfoldings, with shapes fabricated from paper
+author_note: "* Joint last authors"
 ---
 
-## {{ page.title }}
-
-{% include figure.html caption=page.teaser.caption images=page.teaser.images columns=1 %}
-
-{% include authors.html authors=page.authors affiliations=page.affiliations %}
-(* Joint Last authors)
-{% include publication.html publication=page.publication url=page.doi %}
-
-
-### Abstract
+## Abstract
 
 {{ page.abstract }}
 
-### Links
-
-* [Paper]({{page.paper}})
-* [Video]({{page.video}})
-* [Fast-forward]({{page.fast-forward}})
-<br>
-
-
-### Citation
-
-{% include citation.html citation=page.bibtex %}
-
-### Acknowledgements
+## Acknowledgements
 
 Researchers from INRIA received support from the DORNELL Inria Challenge. Silvia Sellán acknowledges support from NSERC Vanier Doctoral Scholarship and an MIT SoE Postdoctoral Fellowship for Engineering Excellence.

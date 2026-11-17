@@ -1,7 +1,7 @@
 ---
 layout: publication
 title: "Computational Design and Fabrication of Modular Robots with Untethered Control"
-doi: arXiv:2508.05410
+doi: https://arxiv.org/abs/2508.05410
 
 
 authors:
@@ -40,7 +40,7 @@ affiliations:
   - name: UofOs
     url: https://www.osaka-u.ac.jp/en
 
-publication: Arxiv (under submission)
+publication: arXiv preprint (under submission)
 date: 2025-08-31
 grp: bickel
 paper: ComputationalDesignandFabricationofModularRobotswithUntetheredControl_arxiv.pdf
@@ -69,34 +69,13 @@ teaser:
     
   images:
   - url: teaser.png
-    alt: teaser
+    alt: Design pipeline from target shapes to an optimized skeletal graph, and the fabricated modular robots
 ---
 
-## {{ page.title }}
-
-{% include figure.html caption=page.teaser.caption images=page.teaser.images columns=1 %}
-
-{% include authors.html authors=page.authors affiliations=page.affiliations %}
-(* Joint Last authors)
-{% include publication.html publication=page.publication url=page.doi %}
-
-
-### Abstract
+## Abstract
 
 {{ page.abstract }}
 
-### Links
+## Acknowledgements
 
-* [Paper]({{page.paper}})
-* [Video]({{page.video}})
-* [Fast-forward]({{page.fast-forward}})
-<br>
-
-
-### Citation
-
-{% include citation.html citation=page.bibtex %}
-
-### Acknowledgements
-
-The authors express gratitude to Magali Lorion for assisting in the initial fabrication of LCEs, Pengbin Tang for providing the code for simulating discrete elastic rods, the Imaging and Optics Facility at ISTA for assisting with the spectrometry measurements, and the MIBA machine shop at ISTA for their support in manufacturing various devices.Funding: This project was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (Grant Agreement No. 715767 -– MATERIALIZABLE).
+The authors express gratitude to Magali Lorion for assisting in the initial fabrication of LCEs, Pengbin Tang for providing the code for simulating discrete elastic rods, the Imaging and Optics Facility at ISTA for assisting with the spectrometry measurements, and the MIBA machine shop at ISTA for their support in manufacturing various devices. Funding: This project was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (Grant Agreement No. 715767, MATERIALIZABLE).

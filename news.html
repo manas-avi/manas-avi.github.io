@@ -1,12 +1,22 @@
 ---
 layout: default
+title: News
 ---
+{%- assign items = site.data.news | sort: 'date' | reverse %}
+{%- assign by_year = items | group_by_exp: 'n', "n.date | date: '%Y'" %}
+<header class="page-head">
+  <h1>News</h1>
+  <nav class="year-nav" aria-label="Years">
+    {%- for group in by_year %}
+    <a href="#y{{ group.name }}">{{ group.name }}</a>
+    {%- endfor %}
+  </nav>
+</header>
 
-
-<h2>News</h2>
-<div class="news-long">
-    {% for news in site.data.news %}
-    {% assign content = "**[" | append: news.date | append: "]:** " | append: news.content %}
-    {{content | markdownify }}
-    {% endfor %}
-</div>
+{%- for group in by_year %}
+<section class="year-group" aria-labelledby="y{{ group.name }}">
+  <h2 class="year" id="y{{ group.name }}">{{ group.name }}</h2>
+  {%- assign list_id = "news-" | append: group.name %}
+  {% include news-list.html items=group.items datefmt="%-d %b" id=list_id %}
+</section>
+{%- endfor %}

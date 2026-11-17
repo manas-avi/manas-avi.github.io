@@ -1,0 +1,17 @@
+{%- assign p = include.p -%}
+<article class="pub">
+  <a class="pub-media" href="{{ p.url | relative_url }}" tabindex="-1" aria-hidden="true">
+    <img src="{{ p.url | append: 'thumb.jpg' | relative_url }}" alt="{{ p.teaser.images[0].alt | default: p.title | escape }}" loading="lazy" decoding="async">
+  </a>
+  <div class="pub-text">
+    <h3 class="pub-title"><a href="{{ p.url | relative_url }}">{{ p.title }}</a></h3>
+    <p class="pub-venue">{{ p.publication }}</p>
+    <p class="pub-authors">{% include author-names.html authors=p.authors %}</p>
+    <p class="pub-links">
+      {%- if p.paper and p.paper != '' %}<a href="{{ p.url | append: p.paper | relative_url }}">Paper (PDF)</a>{% endif -%}
+      {%- if p.video and p.video != '' %}<a href="{{ p.video }}">Video</a>{% endif -%}
+      {%- if p.code and p.code != '' %}<a href="{{ p.code }}">Code</a>{% endif -%}
+      <a href="{{ p.url | relative_url }}">Project page</a>
+    </p>
+  </div>
+</article>

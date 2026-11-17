@@ -67,7 +67,7 @@ teaser:
     
   images:
   - url: teaser.png
-    alt: teaser
+    alt: A flat circuit board unfolded next to the folded shape, then the finished lamp glowing in several light patterns
 
 gallery:
   caption: |
@@ -75,43 +75,24 @@ gallery:
   images:
   - url: pcbend-gallery-crop.jpg
     alt: Five fabricated PCBend models lit with RGB LEDs, next to unfolded PCB panels
+author_note: "* Joint first authors"
+code: https://github.com/mfremer/pcbend
+extra_links:
+  - name: Instagram
+    url: https://www.instagram.com/p/CvuklR3uKDY/
 ---
 
-## {{ page.title }}
-
-{% include figure.html caption=page.teaser.caption images=page.teaser.images columns=1 %}
-
-{% include authors.html authors=page.authors affiliations=page.affiliations %}
-(* Joint first authors)
-{% include publication.html publication=page.publication url=page.doi %}
-
-
-### Abstract
+## Abstract
 
 {{ page.abstract }}
 
-### Links
+## Fabricated models
 
-* [Paper]({{page.paper}})
-* [Supplemental]({{page.supplemental}})
-* [Video]({{page.video}})
-* [Code](https://github.com/mfremer/pcbend)
-* [Instagram](https://www.instagram.com/p/CvuklR3uKDY/)
-<br>
+{% include figure.html caption=page.gallery.caption images=page.gallery.images %}
 
+## Acknowledgements
 
-### Fabricated Models
-
-{% include figure.html caption=page.gallery.caption images=page.gallery.images columns=1 %}
-
-
-### Citation
-
-{% include citation.html citation=page.bibtex %}
-
-### Acknowledgements
-
-We thank the reviewers for the valuable feedback. We also thank the Miba Machine Shop at ISTA, PCBWay, and PragoBoard for helping us with fabrication and assembly. This  project was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (Grant Agreement No. 715767 -– MATERIALIZABLE).
+We thank the reviewers for the valuable feedback. We also thank the Miba Machine Shop at ISTA, PCBWay, and PragoBoard for helping us with fabrication and assembly. This project was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation program (Grant Agreement No. 715767, MATERIALIZABLE).
 
 ![EU](flag_yellow_low.jpg){: height="70px"}
 ![ERC](LOGO-ERC.jpg){: height="70px"}

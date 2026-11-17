@@ -733,7 +733,10 @@ function initFoldScene() {
   foldCamera.position.set(0, 0, 5);
 
   foldRenderer = new THREE.WebGLRenderer({ canvas: foldCanvas, antialias: true });
-  foldRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // Embedded in a page, the viewer shares that page's thread: drawing at 2x DPR there
+  // quadruples the per-LED fragment work for a small stage, and every ms of it is a ms
+  // the host page cannot scroll. Normal resolution is plenty at that size.
+  foldRenderer.setPixelRatio(EMBED ? 1 : Math.min(devicePixelRatio, 2));
   foldRenderer.setSize(innerWidth, innerHeight);
 
   foldControls = new OrbitControls(foldCamera, foldRenderer.domElement);
@@ -765,11 +768,19 @@ function initFoldScene() {
   // the fit is measurable — see the env block there.
 }
 
+// Embedded, the loop draws at most 30 frames a second and none while the host page
+// says the stage is off screen ({ pcbend: { paused: true } }), for the same reason as
+// the pixel ratio above: the host page's scrolling waits on every frame drawn here.
+const EMBED_FRAME_MS = EMBED ? 1000 / 30 : 0;
+let embedPaused = false;
+
 function startFoldRenderLoop() {
   if (foldRafId) return;
   foldLastTime = performance.now();
   (function loop(now = performance.now()) {
     foldRafId = requestAnimationFrame(loop);
+    if (embedPaused) { foldLastTime = now; return; }
+    if (EMBED_FRAME_MS && now - foldLastTime < EMBED_FRAME_MS - 2) return;
     let dt = Math.min(0.1, (now - foldLastTime) / 1000);
     foldLastTime = now;
     if (foldAnimating) advanceFold(dt*2);
@@ -782,7 +793,9 @@ function startFoldRenderLoop() {
     // off uploadStrip(), which is skipped on frames where no effect step fired, nor
     // off setFoldT(), because the view matrix is a per-frame input.
     updateLedLights();
-    tickLedQuality(dt);
+    // The auto quality reads frame time as load. Under the embed cap a frame is long on
+    // purpose, so the deliberate wait is taken off and only real slowness counts.
+    tickLedQuality(EMBED_FRAME_MS ? Math.max(0, dt - (EMBED_FRAME_MS - 1000 / 60) / 1000) : dt);
     foldRenderer.render(foldScene, foldCamera);
   })();
 }
@@ -5372,7 +5385,8 @@ function renderJob(job) {
 //   zoom (with frame: > 1 moves in closer than the default framing),
 //   message (the text the 'text' effect scrolls, up to 120 characters),
 //   brightness (0..200, as the LED brightness slider) and speed (10..300, as the
-//   effect speed slider).
+//   effect speed slider). A message may also carry paused (boolean): the embedded
+//   render loop stops drawing until it is set back to false.
 // Messages are { pcbend: { fold?, ...state } } from the same origin only. One that
 // arrives while a fold is loading is merged and applied once the load lands.
 
@@ -5555,7 +5569,9 @@ window.addEventListener('message', e => {
   if (e.origin !== location.origin) return;
   const msg = e.data?.pcbend;
   if (!msg || typeof msg !== 'object') return;
-  const { fold, ...view } = msg;
+  const { fold, paused, ...view } = msg;
+  // Pausing is not view state: it applies at once, even mid-load.
+  if (paused != null) embedPaused = !!paused;
   // While loading, the fold that counts is the one being fetched (the name label is
   // only written once a load lands), so a repeat of it does not start a second load.
   const showing = foldLoading ? foldLoadingFolder : currentFoldFolder();

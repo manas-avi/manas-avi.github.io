@@ -1,0 +1,18 @@
+{%- comment -%}
+  Author list for a paper, as "First Last, First Last". Names are stored "Last, First"
+  (a trailing * marks joint authorship). Manas is set in bold.
+  include.affiliations: true adds superscript affiliation numbers and author links.
+{%- endcomment -%}
+{%- for author in include.authors -%}
+{%- assign parts = author.name | split: ',' -%}
+{%- assign last = parts[0] | strip -%}
+{%- assign first = parts[1] | strip -%}
+{%- assign full = first | append: ' ' | append: last -%}
+{%- assign bare = last | remove: '*' -%}
+{%- capture name -%}
+{%- if include.affiliations and author.url and author.url != '' -%}<a href="{{ author.url }}">{{ full }}</a>{%- else -%}{{ full }}{%- endif -%}
+{%- endcapture -%}
+<span class="author">{%- if bare == 'Bhargava' -%}<strong class="me">{{ name }}</strong>{%- else -%}{{ name }}{%- endif -%}
+{%- if include.affiliations and author.affiliations -%}<sup>{{ author.affiliations | join: ',' }}</sup>{%- endif -%}</span>
+{%- unless forloop.last -%}, {% endunless -%}
+{%- endfor -%}

@@ -1,17 +1,56 @@
 ---
 layout: default
 ---
+{%- comment -%}
+  Paper page. Everything above the abstract comes from front matter:
+  title, publication (venue), doi, authors, affiliations, author_note,
+  paper, supplemental, video, fast-forward, code, extra_links, teaser, bibtex.
+  The markdown body holds the abstract and any further sections.
+{%- endcomment -%}
+<article class="paper">
+  <header class="paper-head">
+    <p class="paper-venue">
+      {%- if page.doi and page.doi != '' %}<a href="{{ page.doi }}">{{ page.publication }}</a>{% else %}{{ page.publication }}{% endif -%}
+    </p>
+    <h1>{{ page.title }}</h1>
+    <p class="paper-authors">{% include author-names.html authors=page.authors affiliations=true %}</p>
+    {%- if page.affiliations %}
+    <ol class="affiliations" role="list">
+      {%- for affil in page.affiliations %}
+      <li><sup>{{ forloop.index }}</sup>{% if affil.url %}<a href="{{ affil.url }}">{{ affil.name }}</a>{% else %}{{ affil.name }}{% endif %}</li>
+      {%- endfor %}
+    </ol>
+    {%- endif %}
+    {%- if page.author_note %}
+    <p class="author-note">{{ page.author_note }}</p>
+    {%- endif %}
 
-{{ content }}
-<!-- <section id="publication"> -->
-    <!-- {{ content }} -->
-    <!-- <div class="container align=left">
-        <div class="row">
-            <div class="col-lg-12">
-                {{ content }}
-            </div>
-        </div>
-    </div> -->
-<!-- </section> -->
+    <p class="link-row">
+      {%- if page.paper and page.paper != '' %}<a href="{{ page.paper }}">Paper (PDF)</a>{% endif -%}
+      {%- if page.supplemental and page.supplemental != '' %}<a href="{{ page.supplemental }}">Supplemental (PDF)</a>{% endif -%}
+      {%- if page.video and page.video != '' %}<a href="{{ page.video }}">Video</a>{% endif -%}
+      {%- if page['fast-forward'] and page['fast-forward'] != '' %}<a href="{{ page['fast-forward'] }}">Fast-forward video</a>{% endif -%}
+      {%- if page.code and page.code != '' %}<a href="{{ page.code }}">Code</a>{% endif -%}
+      {%- for l in page.extra_links %}<a href="{{ l.url }}">{{ l.name }}</a>{% endfor -%}
+      {%- if page.bibtex %}<a href="#citation">Cite</a>{% endif -%}
+    </p>
+  </header>
 
-<!-- generates the content of the project page inside publication -->
+  {%- if page.teaser and page.teaser.images %}
+  {% include figure.html images=page.teaser.images caption=page.teaser.caption %}
+  {%- endif %}
+
+  <div class="prose">
+    {{ content }}
+  </div>
+
+  {%- if page.bibtex %}
+  <section class="citation" id="citation" aria-labelledby="citation-title">
+    <div class="citation-head">
+      <h2 id="citation-title">Citation</h2>
+      <button class="copy" type="button" data-copy="bibtex" hidden>Copy BibTeX</button>
+    </div>
+    <pre id="bibtex"><code>{{ page.bibtex | strip | escape }}</code></pre>
+  </section>
+  {%- endif %}
+</article>

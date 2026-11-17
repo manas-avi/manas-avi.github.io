@@ -1,0 +1,18 @@
+{%- comment -%}
+  News entries, newest first, from _data/news.yml.
+  include.items:  a pre-filtered list (defaults to all news)
+  include.collapse: show this many, with a button that reveals the rest (needs JS;
+                    without JS every entry is shown)
+  include.datefmt: strftime format for the date column
+{%- endcomment -%}
+{%- assign items = include.items | default: site.data.news -%}
+{%- assign items = items | sort: 'date' | reverse -%}
+{%- assign fmt = include.datefmt | default: '%b %Y' -%}
+<ol class="news-list" role="list" id="{{ include.id | default: 'news-list' }}"{% if include.collapse %} data-collapse="{{ include.collapse }}"{% endif %}>
+  {%- for n in items %}
+  <li class="news-item">
+    <time datetime="{{ n.date | date: '%Y-%m-%d' }}">{{ n.date | date: fmt }}</time>
+    <div class="news-body">{{ n.content | markdownify }}</div>
+  </li>
+  {%- endfor %}
+</ol>

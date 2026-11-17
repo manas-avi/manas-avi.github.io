@@ -1,5 +1,5 @@
 diff --git a/app.js b/app.js
-index 483cea4..75910d1 100644
+index 483cea4..cdfb25f 100644
 --- a/app.js
 +++ b/app.js
 @@ -20,6 +20,17 @@ const meshStats     = document.getElementById('mesh-stats');
@@ -62,7 +62,19 @@ index 483cea4..75910d1 100644
  
  // The three base lights are module-level rather than locals of initFoldScene because
  // an environment preset has to be able to dim them: a "dark room" scene where the
-@@ -718,6 +741,9 @@ function initFoldScene() {
+@@ -710,7 +733,10 @@ function initFoldScene() {
+   foldCamera.position.set(0, 0, 5);
+ 
+   foldRenderer = new THREE.WebGLRenderer({ canvas: foldCanvas, antialias: true });
+-  foldRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
++  // Embedded in a page, the viewer shares that page's thread: drawing at 2x DPR there
++  // quadruples the per-LED fragment work for a small stage, and every ms of it is a ms
++  // the host page cannot scroll. Normal resolution is plenty at that size.
++  foldRenderer.setPixelRatio(EMBED ? 1 : Math.min(devicePixelRatio, 2));
+   foldRenderer.setSize(innerWidth, innerHeight);
+ 
+   foldControls = new OrbitControls(foldCamera, foldRenderer.domElement);
+@@ -718,6 +744,9 @@ function initFoldScene() {
    foldControls.dampingFactor  = 0.07;
    foldControls.minDistance    = 0.01;
    foldControls.maxDistance    = 5000;
@@ -72,7 +84,23 @@ index 483cea4..75910d1 100644
  
    // Directional/ambient/hemisphere only: these are the light types whose contribution
    // is scale-invariant, which matters because the environment rig is a unit-sized
-@@ -747,6 +773,8 @@ function startFoldRenderLoop() {
+@@ -739,14 +768,24 @@ function initFoldScene() {
+   // the fit is measurable — see the env block there.
+ }
+ 
++// Embedded, the loop draws at most 30 frames a second and none while the host page
++// says the stage is off screen ({ pcbend: { paused: true } }), for the same reason as
++// the pixel ratio above: the host page's scrolling waits on every frame drawn here.
++const EMBED_FRAME_MS = EMBED ? 1000 / 30 : 0;
++let embedPaused = false;
++
+ function startFoldRenderLoop() {
+   if (foldRafId) return;
+   foldLastTime = performance.now();
+   (function loop(now = performance.now()) {
+     foldRafId = requestAnimationFrame(loop);
++    if (embedPaused) { foldLastTime = now; return; }
++    if (EMBED_FRAME_MS && now - foldLastTime < EMBED_FRAME_MS - 2) return;
      let dt = Math.min(0.1, (now - foldLastTime) / 1000);
      foldLastTime = now;
      if (foldAnimating) advanceFold(dt*2);
@@ -81,7 +109,18 @@ index 483cea4..75910d1 100644
      advanceSpin(dt);
      advanceEffect(dt);
      foldControls.update();
-@@ -2282,7 +2310,8 @@ function ledContext(n) {
+@@ -754,7 +793,9 @@ function startFoldRenderLoop() {
+     // off uploadStrip(), which is skipped on frames where no effect step fired, nor
+     // off setFoldT(), because the view matrix is a per-frame input.
+     updateLedLights();
+-    tickLedQuality(dt);
++    // The auto quality reads frame time as load. Under the embed cap a frame is long on
++    // purpose, so the deliberate wait is taken off and only real slowness counts.
++    tickLedQuality(EMBED_FRAME_MS ? Math.max(0, dt - (EMBED_FRAME_MS - 1000 / 60) / 1000) : dt);
+     foldRenderer.render(foldScene, foldCamera);
+   })();
+ }
+@@ -2282,7 +2323,8 @@ function ledContext(n) {
    // a half-open shell — neighbours across a seam that has not closed yet are missing,
    // and it would stay that way for the rest of the session. Rebuild once the fold
    // completes. Not on every fold step: this is the O(n²) part.
@@ -91,7 +130,7 @@ index 483cea4..75910d1 100644
    if (c.builtFor !== foldModel || (folded && !c.builtFolded)) {
      buildLedGraph(c);
      c.builtFolded = folded;
-@@ -3862,15 +3891,28 @@ function teardownRig() {
+@@ -3862,15 +3904,28 @@ function teardownRig() {
  // fabrication view. A room is only meaningful around the folded object, which sits
  // in raw .off coordinates — so reframe when entering a scene, once, rather than
  // continuously (which would fight the user's orbit and pan the world during Play).
@@ -127,7 +166,7 @@ index 483cea4..75910d1 100644
    foldControls.update();
  }
  
-@@ -4249,6 +4291,16 @@ function revealFolded() {
+@@ -4249,6 +4304,16 @@ function revealFolded() {
  
  // ── Load fold pair ────────────────────────────────────────────────────────────
  async function loadFoldViewer(folderName) {
@@ -144,7 +183,7 @@ index 483cea4..75910d1 100644
    foldLoadingEl.classList.remove('hidden');
    dropzone.classList.add('hidden');
    // The mesh viewer may be up when the backend hands a generated fold over, and
-@@ -4269,6 +4321,7 @@ async function loadFoldViewer(folderName) {
+@@ -4269,6 +4334,7 @@ async function loadFoldViewer(folderName) {
        ledUrl ? grab(ledUrl) : Promise.resolve(null),
        mapUrl ? grab(mapUrl) : Promise.resolve(null),
      ]);
@@ -152,7 +191,7 @@ index 483cea4..75910d1 100644
  
      const off   = parseOFF(offText);
      const sheet = parseSheet(sheetText);
-@@ -4368,6 +4421,7 @@ async function loadFoldViewer(folderName) {
+@@ -4368,6 +4434,7 @@ async function loadFoldViewer(folderName) {
      foldCamera.updateProjectionMatrix();
      foldControls.target.set(0, 0, 0);
      foldControls.update();
@@ -160,7 +199,7 @@ index 483cea4..75910d1 100644
  
      // ---- UI
      foldFolderNameEl.textContent = folderName;
-@@ -4415,13 +4469,25 @@ async function loadFoldViewer(folderName) {
+@@ -4415,13 +4482,25 @@ async function loadFoldViewer(folderName) {
        frameForEnv();
      }
  
@@ -188,7 +227,7 @@ index 483cea4..75910d1 100644
    }
  }
  
-@@ -4444,6 +4510,7 @@ async function refreshFolderPicker() {
+@@ -4444,6 +4523,7 @@ async function refreshFolderPicker() {
    if (!foldFolderSelect || !foldFolderInput) return;   // no dropzone on this page
    await loadManifest();
    const folders = manifestFolders();
@@ -196,7 +235,7 @@ index 483cea4..75910d1 100644
    if (!folders.length) {
      foldFolderSelect.classList.add('hidden');
      foldFolderInput.classList.remove('hidden');
-@@ -4459,9 +4526,7 @@ async function refreshFolderPicker() {
+@@ -4459,9 +4539,7 @@ async function refreshFolderPicker() {
      // of a shape differ only by that suffix and sit next to each other in the list,
      // so it is the part worth setting apart. The manifest carries family/variant;
      // an older manifest without them is split here instead.
@@ -207,7 +246,7 @@ index 483cea4..75910d1 100644
      const name = variant ? `${family} · ${variant}` : family;
      option.textContent = entry.faces ? `${name} — ${entry.faces} faces` : name;
      foldFolderSelect.appendChild(option);
-@@ -4491,6 +4556,9 @@ foldFolderInput.addEventListener('keydown', e => {
+@@ -4491,6 +4569,9 @@ foldFolderInput.addEventListener('keydown', e => {
  
  foldCloseBtn.addEventListener('click', () => {
    foldAnimating = false;
@@ -217,7 +256,7 @@ index 483cea4..75910d1 100644
    foldPlayBtn.textContent = '▶ Play';
    foldViewerEl.classList.add('hidden');
    dropzone.classList.remove('hidden');
-@@ -4503,6 +4571,7 @@ foldCloseBtn.addEventListener('click', () => {
+@@ -4503,6 +4584,7 @@ foldCloseBtn.addEventListener('click', () => {
  
  foldSlider.addEventListener('input', () => {
    foldAnimating = false;
@@ -225,7 +264,7 @@ index 483cea4..75910d1 100644
    foldPlayBtn.textContent = '▶ Play';
    setFoldT(Number(foldSlider.value) / 100);
  });
-@@ -5067,6 +5136,7 @@ async function probeBackend() {
+@@ -5067,6 +5149,7 @@ async function probeBackend() {
    } catch {
      backend = null;          // no backend here; static mode
    }
@@ -233,7 +272,7 @@ index 483cea4..75910d1 100644
    paintHint();
    if (backend?.ok) reattachJob();
  }
-@@ -5290,8 +5360,357 @@ function renderJob(job) {
+@@ -5290,8 +5373,360 @@ function renderJob(job) {
    }
  }
  
@@ -249,7 +288,8 @@ index 483cea4..75910d1 100644
 +//   zoom (with frame: > 1 moves in closer than the default framing),
 +//   message (the text the 'text' effect scrolls, up to 120 characters),
 +//   brightness (0..200, as the LED brightness slider) and speed (10..300, as the
-+//   effect speed slider).
++//   effect speed slider). A message may also carry paused (boolean): the embedded
++//   render loop stops drawing until it is set back to false.
 +// Messages are { pcbend: { fold?, ...state } } from the same origin only. One that
 +// arrives while a fold is loading is merged and applied once the load lands.
 +
@@ -432,7 +472,9 @@ index 483cea4..75910d1 100644
 +  if (e.origin !== location.origin) return;
 +  const msg = e.data?.pcbend;
 +  if (!msg || typeof msg !== 'object') return;
-+  const { fold, ...view } = msg;
++  const { fold, paused, ...view } = msg;
++  // Pausing is not view state: it applies at once, even mid-load.
++  if (paused != null) embedPaused = !!paused;
 +  // While loading, the fold that counts is the one being fetched (the name label is
 +  // only written once a load lands), so a repeat of it does not start a second load.
 +  const showing = foldLoading ? foldLoadingFolder : currentFoldFolder();
@@ -591,7 +633,7 @@ index 483cea4..75910d1 100644
  
  // ── Call to action: fold it yourself / feedback / contact ─────────────────────
  // A single button at the bottom centre of whichever viewer is up, opening a card
-@@ -5302,7 +5721,7 @@ refreshFolderPicker();
+@@ -5302,7 +5737,7 @@ refreshFolderPicker();
  // the feedback button falls back to a mailto, so the page is never broken by not
  // having decided on a form yet.
  const FEEDBACK_FORM_URL = 'https://forms.gle/HdNidv7jum61hXZs5';
@@ -601,7 +643,7 @@ index 483cea4..75910d1 100644
  //
  //   assets/unfold/<mesh>_unfold/<mesh>-unfold-fab.pdf
 diff --git a/index.html b/index.html
-index dd1ffef..d3c9824 100644
+index dd1ffef..6ab90c6 100644
 --- a/index.html
 +++ b/index.html
 @@ -3,7 +3,7 @@
@@ -687,7 +729,7 @@ index dd1ffef..d3c9824 100644
        </section>
  
        <div class="panel-divider"></div>
-@@ -266,7 +270,7 @@
+@@ -266,11 +270,11 @@
          <h3>Want one as a real lamp?</h3>
          <p>These fold up from a single flexible PCB with the LEDs already on it.
             If you would like one made, get in touch.</p>
@@ -696,6 +738,11 @@ index dd1ffef..d3c9824 100644
        </section>
      </div>
    </div>
+ 
+-  <script type="module" src="app.js"></script>
++  <script type="module" src="app.js?v=2"></script>
+ </body>
+ </html>
 diff --git a/style.css b/style.css
 index cce6e80..2337f65 100644
 --- a/style.css

@@ -1,10 +1,8 @@
 title: Manas Bhargava
 logo: /assets/img/manas-profile.jpeg
 repository_name: Manas Bhargava
-email: manas[.]bhargava@ist[.]ac[.]at
+email: manas.16.bhargava@gmail.com
 description: Postdoctoral Researcher at ISTA
-favicon: true
-color-scheme: auto
 domain: https://manas-avi.github.io/       # if you want to force HTTPS, specify the domain without the http at the start, e.g. example.com
 url: https://manas-avi.github.io/  # the base hostname and protocol for your site, e.g. http://example.com
 permalink: pretty
@@ -17,16 +15,15 @@ plugins:
   - jemoji
 
 
-platforms:
+# Profile links shown under the bio on the homepage, in this order.
+# Email and "CV on request" are added automatically from `email` above.
+profiles:
+  - name: Google Scholar
+    url: https://scholar.google.com/citations?user=ttw9rqgAAAAJ&hl=en
   - name: GitHub
-    icon: <i class="fa-brands fa-github"></i>
-    link: https://github.com/manas-avi
+    url: https://github.com/manas-avi
   - name: LinkedIn
-    icon: <i class="fa-brands fa-linkedin"></i>
-    link: https://www.linkedin.com/in/manas-bhargava-b36463121/
-  - name: Twitter
-    icon: <i class="fa-brands fa-twitter"></i>
-    link: https://twitter.com/Manas161997/  
+    url: https://www.linkedin.com/in/manas-bhargava-b36463121/
 
 
 collections:
