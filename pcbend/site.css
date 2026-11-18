@@ -102,9 +102,14 @@ p { margin: 0; }
 .hero .vid-toggle { z-index: 2; right: var(--gutter); bottom: 24px; }
 @media (max-width: 700px) {
   .hero { display: block; min-height: 0; }
-  .hero-media { position: relative; aspect-ratio: 4 / 5; }
+  /* a band of about 40% of the screen, so the headline, subhead and gold button all fit
+     on the first screen of a phone */
+  .hero-media { position: relative; height: 40svh; min-height: 250px; }
+  .hero-video { object-position: 50% 45%; }
   .hero-media::after { background: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.5) 22%, rgba(0, 0, 0, 0) 42%); }
-  .hero-copy { padding-top: 0; padding-bottom: 8px; margin-top: -56px; }
+  .hero-copy { padding-top: 0; padding-bottom: 8px; margin-top: -40px; }
+  .hero-copy .lead { margin-top: 0.9rem; font-size: 1.06rem; }
+  .cta-row { margin-top: 1.25rem; }
   .hero .vid-toggle { top: 14px; bottom: auto; right: 14px; }
   .cta-row .btn { width: 100%; }
 }
@@ -251,7 +256,7 @@ input[type="range"] { width: 100%; accent-color: var(--gold); }
 /* ── Forms ── */
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
 @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
-.side-photo { margin: 28px 0 0; }
+.side-photo { margin: 28px 0 0; max-width: 420px; }
 .side-photo img { border-radius: 10px; }
 .side-photo figcaption { margin-top: 8px; color: var(--fog); font-size: var(--t-sm); }
 .form { display: grid; gap: 16px; }
@@ -290,9 +295,9 @@ input[type="range"] { width: 100%; accent-color: var(--gold); }
 }
 .reserve h2 { font-size: clamp(2.4rem, 5vw, 4rem); }
 .reserve .lead { margin-top: 0.8rem; }
-.perks { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 1.2rem; }
+.reserve .perks { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 22px; }
 .perks li { display: flex; align-items: center; gap: 9px; font-weight: 500; }
-.reserve .form { margin-top: 1.6rem; }
+.reserve .form { margin-top: 26px; }
 .reserve-panel .row3 { grid-template-columns: 1fr 1fr; }
 .reserve-panel .row3 > :first-child { grid-column: 1 / -1; }
 .reserve-panel .field input:not([type="range"]), .reserve-panel .field select { background-color: rgba(0, 0, 0, 0.55); }
@@ -325,7 +330,16 @@ input[type="range"] { width: 100%; accent-color: var(--gold); }
 }
 .slides-track::-webkit-scrollbar { display: none; }
 .slide { flex: 0 0 100%; scroll-snap-align: start; margin: 0; }
-.slide img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; }
+.slide img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+.split.makers { align-items: center; }
+/* Phones: the heading first, then the photos, then the story. The text column's children
+   join the grid so the heading can be ordered ahead of the slideshow. */
+@media (max-width: 860px) {
+  .split.makers { gap: 0; }
+  .split.makers > div:last-child { display: contents; }
+  .split.makers h2 { order: -1; margin-bottom: 20px; }
+  .split.makers .slides { margin-bottom: 8px; }
+}
 .slide-cap { margin-top: 10px; color: var(--fog); font-size: var(--t-sm); }
 .slides-nav { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
 .slides-btn {
