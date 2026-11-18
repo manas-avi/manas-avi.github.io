@@ -1,6 +1,7 @@
 // PCBend pre-launch page: every looping clip of a real lamp. Clips play only while on
 // screen, never by themselves for visitors who asked for less motion, and each has a
-// pause button. The hero picks a portrait or a wide cut to suit the screen.
+// pause button. The hero autoplays from the HTML itself, and the browser picks its
+// portrait or wide cut from the <source media> list.
 //
 // Clips inside a [data-one-at-a-time] container take turns: one plays, the others hold a
 // dimmed still frame, and the turn moves on every few seconds. Several clips decoding at
@@ -10,6 +11,7 @@
 const ROTATE_MS = 6000;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const narrow = matchMedia('(max-width: 700px)');
+const hasMedia = v => Boolean(v.getAttribute('src') || v.querySelector('source'));
 const state = new Map();   // video -> { visible, paused, btn, group }
 
 function label(s) {
@@ -25,7 +27,7 @@ function sync(v) {
   const s = state.get(v);
   if (!s) return;
   const myTurn = !s.group || liveOf(s.group) === v;
-  if (s.visible && !s.paused && myTurn && !v.closest('[hidden]') && v.getAttribute('src')) {
+  if (s.visible && !s.paused && myTurn && !v.closest('[hidden]') && hasMedia(v)) {
     v.muted = true;   // autoplay is only allowed muted
     v.play().catch(() => {});
   } else {
@@ -82,21 +84,24 @@ for (const g of groups) {
   }, ROTATE_MS);
 }
 
-// Clips with two cuts carry no src in the page, so a phone never starts downloading the
-// wide one: the right cut is set here, and again if the screen changes shape.
-for (const v of document.querySelectorAll('video[data-wide]')) {
-  const pick = () => {
-    const [src, poster] = narrow.matches
-      ? [v.dataset.portrait, v.dataset.portraitPoster]
-      : [v.dataset.wide, v.dataset.widePoster];
-    if (v.getAttribute('src') === src) return;
-    v.poster = poster;
-    v.src = src;
-    sync(v);
-  };
+// The hero's phone cut also has its own still: swap the poster to match the screen.
+for (const v of document.querySelectorAll('video[data-portrait-poster]')) {
+  const wide = v.getAttribute('poster');
+  const pick = () => { v.poster = narrow.matches ? v.dataset.portraitPoster : wide; };
   pick();
   narrow.addEventListener('change', pick);
 }
+
+// Start each clip the moment it can play, not only when it scrolls into view.
+loops.forEach(v => v.addEventListener('canplay', () => sync(v)));
+
+// Some browsers hold back autoplay until the visitor has interacted with the page. The
+// first scroll, tap, click or key press anywhere then starts whatever should be playing.
+const nudge = () => {
+  loops.forEach(sync);
+  for (const t of ['pointerdown', 'keydown', 'scroll', 'touchstart']) removeEventListener(t, nudge, true);
+};
+for (const t of ['pointerdown', 'keydown', 'scroll', 'touchstart']) addEventListener(t, nudge, { capture: true, passive: true });
 
 if ('IntersectionObserver' in window) {
   const io = new IntersectionObserver(entries => {

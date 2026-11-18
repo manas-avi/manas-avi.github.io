@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/pcbend/site.css?v=19">
+<link rel="stylesheet" href="/pcbend/site.css?v=20">
 </head>
 <body>
 
@@ -49,11 +49,12 @@
   <!-- Hero: the real board folding, then the real lamp lighting up -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-media">
-      <video class="loop hero-video" width="1280" height="720" muted loop playsinline preload="auto"
-        poster="/pcbend/media/hero-fold-glow.jpg"
-        data-wide="/pcbend/media/hero-fold-glow.mp4" data-wide-poster="/pcbend/media/hero-fold-glow.jpg"
-        data-portrait="/pcbend/media/hero-fold-glow-portrait.mp4" data-portrait-poster="/pcbend/media/hero-fold-glow-portrait.jpg"
-        aria-label="Hands fold a flat black circuit board into a cat shape. Then the finished cat lamp lights up in a dark room."></video>
+      <video class="loop hero-video" width="1280" height="720" autoplay muted loop playsinline preload="auto"
+        poster="/pcbend/media/hero-fold-glow.jpg" data-portrait-poster="/pcbend/media/hero-fold-glow-portrait.jpg"
+        aria-label="Hands fold a flat black circuit board into a cat shape. Then the finished cat lamp lights up in a dark room.">
+        <source media="(max-width: 700px)" src="/pcbend/media/hero-fold-glow-portrait.mp4" type="video/mp4">
+        <source src="/pcbend/media/hero-fold-glow.mp4" type="video/mp4">
+      </video>
       <button class="vid-toggle" type="button" aria-label="Pause video"></button>
     </div>
     <div class="wrap hero-copy">
@@ -472,9 +473,9 @@
   initNav();
   initTracking();
 </script>
-<script type="module" src="/pcbend/loops.js?v=19"></script>
-<script type="module" src="/pcbend/playground.js?v=19"></script>
-<script type="module" src="/pcbend/forms.js?v=19"></script>
-<script type="module" src="/pcbend/slides.js?v=19"></script>
+<script type="module" src="/pcbend/loops.js?v=20"></script>
+<script type="module" src="/pcbend/playground.js?v=20"></script>
+<script type="module" src="/pcbend/forms.js?v=20"></script>
+<script type="module" src="/pcbend/slides.js?v=20"></script>
 </body>
 </html>
